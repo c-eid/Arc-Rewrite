@@ -5,7 +5,9 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.isSim;
 
@@ -26,8 +28,11 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.IO.TurretIO;
+import frc.robot.subsystems.sim.PhysicsSim;
 
 public class s_Turret extends SubsystemBase {
 
@@ -43,10 +48,6 @@ public class s_Turret extends SubsystemBase {
   private Slot0Configs pivotSlot0Configs = pivotConfigs.Slot0;
   private MotionMagicConfigs pivotMotionMagicConfigs = pivotConfigs.MotionMagic;
 
-  // Sim
-  private final TalonFXSimState turretMotorSim;
-  private final SingleJointedArmSim m_physicsSim;
-
   final MotionMagicExpoTorqueCurrentFOC m_request = new MotionMagicExpoTorqueCurrentFOC(0);
 
   // Turret Specific Variables
@@ -59,37 +60,20 @@ public class s_Turret extends SubsystemBase {
   public s_Turret(TurretIO turretSim) {
     this.turretSimulation = turretSim;
 
-    if (isSim) {
-      turretMotorSim = turretMotor.getSimState();
-      turretMotorSim.setMotorType(MotorType.KrakenX60);
-
-      m_physicsSim = new SingleJointedArmSim(
-          DCMotor.getKrakenX60Foc(1),
-          ratio,
-          moi,
-          0.2,
-          Math.toRadians(-360),
-          Math.toRadians(360),
-          false,
-          0);
-
-    } else {
-      turretMotorSim = null;
-      m_physicsSim = null;
-    }
-
     pivotSlot0Configs.kS = 0.2;
     pivotSlot0Configs.kV = 0; // Unnessasary
-    pivotSlot0Configs.kA = 1;
+    pivotSlot0Configs.kA = 2;
     pivotSlot0Configs.kG = 0;
 
-    pivotSlot0Configs.kP = 0; //10;
+    pivotSlot0Configs.kP = 0; // 10;
     pivotSlot0Configs.kI = 0;
-    pivotSlot0Configs.kD =0;// 0.6;
+    pivotSlot0Configs.kD = 0;// 0.6;
 
-    pivotMotionMagicConfigs.MotionMagicCruiseVelocity = 0;
-    pivotMotionMagicConfigs.MotionMagicExpo_kV =  0.124 * ratio;
-    pivotMotionMagicConfigs.MotionMagicExpo_kA =  0.1;
+    pivotMotionMagicConfigs.MotionMagicCruiseVelocity = 2;
+    pivotMotionMagicConfigs.MotionMagicAcceleration = 4;
+
+    pivotMotionMagicConfigs.MotionMagicExpo_kV = 0.124 * ratio;
+    pivotMotionMagicConfigs.MotionMagicExpo_kA = 0.1 * ratio;
 
     pivotConfigs.Feedback.SensorToMechanismRatio = ratio;
 
@@ -103,12 +87,19 @@ public class s_Turret extends SubsystemBase {
     pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Rotations.convertFrom(-360, Degree);
 
     pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    double rotorInertia = (moi / Math.pow(ratio, 2)) + 0.0000487; // 0.0000487 is the estimated inertia of the motor
+                                                                  // itself, this is added to make sim more accurate
+
+    PhysicsSim.getInstance().addTalonFX(turretMotor, rotorInertia);
 
     turretMotor.getConfigurator().apply(pivotConfigs);
+
+    System.out.println("Rotor Inertia: " + rotorInertia);
+
   }
 
   public void setDegrees(double degrees) {
-    // Add Offset
+    // Add Offset%
     degrees += offset.getAsDouble();
 
     // Actual Motor position
@@ -121,7 +112,7 @@ public class s_Turret extends SubsystemBase {
       inaccurate = () -> true;
     }
 
-    // Add telemetry for amout of degree inaccuracy
+    SmartDashboard.putNumber("Turret/Setpoint", degrees);
 
     // There was a check to see if degree
 
@@ -151,27 +142,12 @@ public class s_Turret extends SubsystemBase {
     turretSimulation.setTurretDegrees(this.getAngle().in(Degree));
 
     // This method will be called once per scheduler run
-  } 
+  }
 
   @Override
   public void simulationPeriodic() {
-    turretMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+    SmartDashboard.putNumber("Turret/Angle", this.getAngle().in(Degree));
 
-
-    m_physicsSim.setInputVoltage(turretMotorSim.getMotorVoltageMeasure().in(Volts));
-
-    m_physicsSim.update(0.020);
-
-    turretMotorSim.setRawRotorPosition(
-      m_physicsSim.getAngleRads() * ratio / (2 * Math.PI)
-    );
-
-    turretMotorSim.setRotorVelocity(
-        m_physicsSim.getVelocityRadPerSec() * ratio / (2 * Math.PI)
-    );
-    SmartDashboard.putNumber("Turret/Actual", this.getAngle().in(Degree));
-
-    // This method will be called once per scheduler run in simulation
+    SmartDashboard.putNumber("Turret/Velocity", turretMotor.getVelocity().getValue().in(RotationsPerSecond));
   }
-
 }
