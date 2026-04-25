@@ -6,6 +6,14 @@ package frc.robot;
 
 
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.pathfinding.Pathfinder;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -67,8 +75,18 @@ public class RobotContainer {
   private void configureCommandBindings(){
     driver.rightBumper().whileTrue(intake_Com);
   }
+  PathConstraints constraints = new PathConstraints(  3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+
+  Command testAuto = Commands.sequence(
+    Commands.runOnce(() -> s_Swerve.getDrivetrain().resetPose(new Pose2d(5, 5, new Rotation2d(0)))),
+    AutoBuilder.pathfindToPose(new Pose2d(10, 5, Rotation2d.fromDegrees(40)), constraints, 0.0).withTimeout(3),
+    AutoBuilder.pathfindToPose(new Pose2d(3, 2, Rotation2d.fromDegrees(170)), constraints, 0.0).withTimeout(3),
+    AutoBuilder.pathfindToPose(new Pose2d(14,5, Rotation2d.fromDegrees(170)), constraints, 0.0).withTimeout(3),
+    AutoBuilder.pathfindToPose(new Pose2d(10,5, Rotation2d.fromDegrees(0)), constraints, 0.0).withTimeout(3),
+    AutoBuilder.pathfindToPose(new Pose2d(4,2, Rotation2d.fromDegrees(290)), constraints, 0.0).withTimeout(3));
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return testAuto;
+  
   }
 }

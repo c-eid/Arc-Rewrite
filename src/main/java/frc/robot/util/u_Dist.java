@@ -77,11 +77,13 @@ public class u_Dist {
     }
 
     public void updateGoalPose() {
-        if (inAllianceZone(getTurretpose())) {
             setHubAsGoal(alliance);
-        } else {
-            setFeedAsGoal(getTurretpose(), alliance);
-        }
+
+        // if (inAllianceZone(getTurretpose())) {
+        //     setHubAsGoal(alliance);
+        // } else {
+        //     setFeedAsGoal(getTurretpose(), alliance);
+        // }
     }
 
     private void setHubAsGoal(String alliance) {

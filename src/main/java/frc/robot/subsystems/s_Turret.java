@@ -60,7 +60,7 @@ public class s_Turret extends SubsystemBase {
   public s_Turret(TurretIO turretSim) {
     this.turretSimulation = turretSim;
 
-    pivotSlot0Configs.kS = 0.2;
+    pivotSlot0Configs.kS = 0;
     pivotSlot0Configs.kV = 0; // Unnessasary
     pivotSlot0Configs.kA = 2;
     pivotSlot0Configs.kG = 0;
