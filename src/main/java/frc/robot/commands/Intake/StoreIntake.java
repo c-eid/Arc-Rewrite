@@ -7,17 +7,16 @@ package frc.robot.commands.Intake;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.s_Intake;
 
-public class Intaking extends Command {
+public class StoreIntake extends Command {
   s_Intake intake;
-  public Intaking(s_Intake intake) {
+  public StoreIntake(s_Intake intake) {
       this.intake = intake;
       addRequirements(intake);
   }
 
   @Override
   public void initialize() {
-    intake.setDegrees(0);
-    intake.setSpeed(1);
+    intake.setDegrees(140);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -27,7 +26,6 @@ public class Intaking extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    intake.setSpeed(0);
   }
 
   // Returns true when the command should end.

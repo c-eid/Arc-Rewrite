@@ -42,7 +42,7 @@ public class u_Lut {
         // tofMap.put(16.91, 1.38);
 
         
-        rpmMap.put(18.22, 200.0);
+        rpmMap.put(18.22, 2400.0);
         angleMap.put(18.22, 25.0);
         // tofMap.put(18.22, 1.44);
 

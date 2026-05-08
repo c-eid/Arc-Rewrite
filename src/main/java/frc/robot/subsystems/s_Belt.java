@@ -10,15 +10,17 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.sim.PhysicsSim;
 
-public class s_Index extends SubsystemBase {
+public class s_Belt extends SubsystemBase {
   /** Creates a new s_Shooter. */
 
   private TalonFX indexTalon = new TalonFX(50);
   final MotionMagicVelocityVoltage m_request = new MotionMagicVelocityVoltage(0);
 
-  public s_Index() {
+  public s_Belt() {
     // in init function
     var talonFXConfigs = new TalonFXConfiguration();
 
@@ -34,6 +36,8 @@ public class s_Index extends SubsystemBase {
     motionMagicConfigs.MotionMagicAcceleration = 400; // Target acceleration of 400 rps/s (0.25 seconds to max)
     motionMagicConfigs.MotionMagicJerk = 4000; // Target jerk of 4000 rps/s/s (0.1 seconds)
 
+    
+
     indexTalon.getConfigurator().apply(talonFXConfigs);
   }
 
@@ -42,7 +46,7 @@ public class s_Index extends SubsystemBase {
   double startJamTimestamp = 0;
 
   public void setIndexRpm(double rpm) {
-    indexTalon.setControl(m_request.withVelocity(RPM.of(rpm)));
+    indexTalon.setControl(m_request.withVelocity(RPM.of(rpm)).withEnableFOC(true));
   }
 
   public double getVelocity() {
@@ -51,6 +55,8 @@ public class s_Index extends SubsystemBase {
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("Turret/Belt RPM", indexTalon.getVelocity().getValue().in(RPM));
+
   }
 
   @Override

@@ -15,9 +15,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.FieldConstants;
@@ -31,6 +35,13 @@ public class u_Dist {
 
     // Drivetrain
     CommandSwerveDrivetrain drivetrain;
+
+    // Network Tables
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    NetworkTable table = inst.getTable("uDist");
+    
+    // Pose sender
+    StructPublisher<Pose2d> virtualGoalPoseSender = table.getStructTopic("Virtual Goal", Pose2d.struct).publish();
 
     // Drivetrain Suppliers
     Supplier<Pose2d> drivePose = () -> drivetrain.getState().Pose;
@@ -77,13 +88,13 @@ public class u_Dist {
     }
 
     public void updateGoalPose() {
-            setHubAsGoal(alliance);
+            // setHubAsGoal(alliance);
 
-        // if (inAllianceZone(getTurretpose())) {
-        //     setHubAsGoal(alliance);
-        // } else {
-        //     setFeedAsGoal(getTurretpose(), alliance);
-        // }
+        if (inAllianceZone(getTurretpose())) {
+            setHubAsGoal(alliance);
+        } else {
+            setFeedAsGoal(getTurretpose(), alliance);
+        }
     }
 
     private void setHubAsGoal(String alliance) {
@@ -225,6 +236,7 @@ public class u_Dist {
                 goalPose.getY() + speedModifier * fieldSpeeds.vyMetersPerSecond * tof, new Rotation2d());
 
         if (interationCount <= 0) {
+            virtualGoalPoseSender.set(translatedGoalPose);
             return translatedGoalPose;
         } else {
             Distance compensatedDist = Meter

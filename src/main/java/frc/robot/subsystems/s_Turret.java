@@ -4,33 +4,25 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Degree;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.isSim;
-
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicExpoTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.sim.TalonFXSimState;
-import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
-
-import edu.wpi.first.math.system.plant.DCMotor;
+import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.IO.TurretIO;
 import frc.robot.subsystems.sim.PhysicsSim;
 
@@ -38,7 +30,7 @@ public class s_Turret extends SubsystemBase {
 
   // Cosntants
   private final int motorId = 3;
-  private final double ratio = (144 / 15) * 5 * 1.084;
+  private final double ratio = (144.0 / 15.0) * 5.0;
   private final double moi = 0.106165886;
 
   // MotionMagicExpoSetup
@@ -48,7 +40,8 @@ public class s_Turret extends SubsystemBase {
   private Slot0Configs pivotSlot0Configs = pivotConfigs.Slot0;
   private MotionMagicConfigs pivotMotionMagicConfigs = pivotConfigs.MotionMagic;
 
-  final MotionMagicExpoTorqueCurrentFOC m_request = new MotionMagicExpoTorqueCurrentFOC(0);
+  final MotionMagicVoltage m_request = new MotionMagicVoltage(0);
+  final VoltageOut m_volts = new VoltageOut(0);
 
   // Turret Specific Variables
   public Supplier<Boolean> inaccurate = () -> false;
@@ -57,28 +50,40 @@ public class s_Turret extends SubsystemBase {
   // Telemetry
   private TurretIO turretSimulation;
 
+  private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
+      new SysIdRoutine.Config(
+          Volts.of(0.5).per(Second), // Ramp rate
+          Volts.of(3), // Max step voltage
+          Seconds.of(4), // Timeout
+          (state) -> SignalLogger.writeString("sysid-test-state", state.toString())),
+      new SysIdRoutine.Mechanism(
+          (voltage) -> turretMotor.setControl(m_volts.withOutput(voltage)),
+          null, // Phoenix 6 handles logging automatically via SignalLogger
+          this));
+
   public s_Turret(TurretIO turretSim) {
     this.turretSimulation = turretSim;
 
-    pivotSlot0Configs.kS = 0;
-    pivotSlot0Configs.kV = 0; // Unnessasary
-    pivotSlot0Configs.kA = 2;
+    pivotSlot0Configs.kS = 0.14316;
+    pivotSlot0Configs.kV =6.2968;
+    pivotSlot0Configs.kA = 0.30931;
     pivotSlot0Configs.kG = 0;
 
-    pivotSlot0Configs.kP = 0; // 10;
+    pivotSlot0Configs.kP =65.198; // 10;
     pivotSlot0Configs.kI = 0;
-    pivotSlot0Configs.kD = 0;// 0.6;
+    pivotSlot0Configs.kD =10.08;// 0.6;
 
     pivotMotionMagicConfigs.MotionMagicCruiseVelocity = 2;
     pivotMotionMagicConfigs.MotionMagicAcceleration = 4;
+    pivotMotionMagicConfigs.MotionMagicJerk = 30;
 
-    pivotMotionMagicConfigs.MotionMagicExpo_kV = 0.124 * ratio;
-    pivotMotionMagicConfigs.MotionMagicExpo_kA = 0.1 * ratio;
 
     pivotConfigs.Feedback.SensorToMechanismRatio = ratio;
 
     pivotConfigs.CurrentLimits.StatorCurrentLimit = 70;
     pivotConfigs.CurrentLimits.SupplyCurrentLimit = 60;
+
+    pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
     pivotConfigs.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
@@ -87,15 +92,32 @@ public class s_Turret extends SubsystemBase {
     pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Rotations.convertFrom(-360, Degree);
 
     pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    double rotorInertia = (moi / Math.pow(ratio, 2)) + 0.0000487; // 0.0000487 is the estimated inertia of the motor
-                                                                  // itself, this is added to make sim more accurate
 
-    PhysicsSim.getInstance().addTalonFX(turretMotor, rotorInertia);
+    PhysicsSim.getInstance().addTalonFX(turretMotor, moi, ratio);
 
     turretMotor.getConfigurator().apply(pivotConfigs);
 
-    System.out.println("Rotor Inertia: " + rotorInertia);
+  }
 
+  private Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return sysIdRoutine.quasistatic(direction);
+  }
+
+  private Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return sysIdRoutine.dynamic(direction);
+  }
+
+  public Command getSysIdRoutine() {
+    Command turretSysidRoutine = Commands.sequence(
+        sysIdDynamic(Direction.kForward),
+        sysIdDynamic(Direction.kReverse),
+        sysIdQuasistatic(Direction.kForward),
+        sysIdQuasistatic(Direction.kReverse));
+    return turretSysidRoutine;
+  }
+
+  public void setVoltage(double volts) {
+    turretMotor.setVoltage(volts);
   }
 
   public void setDegrees(double degrees) {
@@ -112,7 +134,7 @@ public class s_Turret extends SubsystemBase {
       inaccurate = () -> true;
     }
 
-    SmartDashboard.putNumber("Turret/Setpoint", degrees);
+    SmartDashboard.putNumber("Turret/Turret Angle Setpoint", degrees);
 
     // There was a check to see if degree
 
@@ -140,14 +162,13 @@ public class s_Turret extends SubsystemBase {
   @Override
   public void periodic() {
     turretSimulation.setTurretDegrees(this.getAngle().in(Degree));
+    SmartDashboard.putNumber("Turret/Turret Angle", this.getAngle().in(Degree));
+    SmartDashboard.putNumber("Turret/Velocity", turretMotor.getVelocity().getValue().in(RotationsPerSecond));
 
-    // This method will be called once per scheduler run
   }
 
   @Override
   public void simulationPeriodic() {
-    SmartDashboard.putNumber("Turret/Angle", this.getAngle().in(Degree));
 
-    SmartDashboard.putNumber("Turret/Velocity", turretMotor.getVelocity().getValue().in(RotationsPerSecond));
   }
 }

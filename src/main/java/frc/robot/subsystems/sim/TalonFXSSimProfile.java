@@ -1,7 +1,7 @@
 package frc.robot.subsystems.sim;
 
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.sim.TalonFXSimState;
+import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.sim.TalonFXSSimState;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -12,30 +12,23 @@ import frc.robot.subsystems.sim.PhysicsSim.SimProfile;
 /**
  * Holds information about a simulated TalonFX.
  */
-class TalonFXSimProfile extends SimProfile {
+class TalonFXSSimProfile extends SimProfile {
     private static final double kMotorResistance = 0.002; // Assume 2mOhm resistance for voltage drop calculation
-    private final TalonFXSimState _talonFXSim;
+    private final TalonFXSSimState _talonFXSSim;
 
     private final DCMotorSim _motorSim;
 
-    /**
-     * Creates a new simulation profile for a TalonFX device.
+    /**     
+     * Creates a new simulation profile for a TalonFXS device.
      * 
-     * @param talonFX
+     * @param talonFXS
      *                        The TalonFX device
      * @param rotorInertia
      *                        Rotational Inertia of the mechanism at the rotor
      */
-    public TalonFXSimProfile(final TalonFX talonFX, final double rotorInertia) {
-        this._talonFXSim = talonFX.getSimState();
-        var gearbox = DCMotor.getKrakenX60Foc(1);
-        
-        this._motorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(gearbox, rotorInertia, 1.0), gearbox);
-    }
-
-      public TalonFXSimProfile(final TalonFX talonFX, final double rotorInertia, int gearBoxes) {
-        this._talonFXSim = talonFX.getSimState();
-        var gearbox = DCMotor.getKrakenX60Foc(gearBoxes);
+    public TalonFXSSimProfile(final TalonFXS talonFXS, final double rotorInertia) {
+        this._talonFXSSim = talonFXS.getSimState();
+        var gearbox = DCMotor.getMinion(1);
         this._motorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(gearbox, rotorInertia, 1.0), gearbox);
     }
  
@@ -49,7 +42,7 @@ class TalonFXSimProfile extends SimProfile {
     public void run() {
         /// DEVICE SPEED SIMULATION
 
-        _motorSim.setInputVoltage(_talonFXSim.getMotorVoltage());
+        _motorSim.setInputVoltage(_talonFXSSim.getMotorVoltage());
 
         _motorSim.update(getPeriod());
 
@@ -57,9 +50,9 @@ class TalonFXSimProfile extends SimProfile {
         final double position_rot = _motorSim.getAngularPositionRotations();
         final double velocity_rps = Units.radiansToRotations(_motorSim.getAngularVelocityRadPerSec());
 
-        _talonFXSim.setRawRotorPosition(position_rot);
-        _talonFXSim.setRotorVelocity(velocity_rps);
+        _talonFXSSim.setRawRotorPosition(position_rot);
+        _talonFXSSim.setRotorVelocity(velocity_rps);
 
-        _talonFXSim.setSupplyVoltage(12 - _talonFXSim.getSupplyCurrent() * kMotorResistance);
+        _talonFXSSim.setSupplyVoltage(12 - _talonFXSSim.getSupplyCurrent() * kMotorResistance);
     }
 }
