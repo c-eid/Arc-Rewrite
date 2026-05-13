@@ -136,6 +136,9 @@ public class s_QuestNav extends SubsystemBase {
 
   public void setPoseFromString(Supplier<String> whereSupplier) {
     System.out.println(whereSupplier.get());
+
+    trustQuest = true;
+
     String where = whereSupplier.get();
     if (where.equals("BlueLeft")) {
       setPose(new Pose3d(BlueLeft));

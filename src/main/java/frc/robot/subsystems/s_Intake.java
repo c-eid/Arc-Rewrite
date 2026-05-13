@@ -15,6 +15,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -25,6 +26,8 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -47,6 +50,7 @@ public class s_Intake extends SubsystemBase {
   Slot0Configs slot0Configs = pivotConfigs.Slot0;
 
   final MotionMagicVoltage m_request = new MotionMagicVoltage(0);
+  final VoltageOut m_VoltageOut = new VoltageOut(0);
 
   private TalonFX lPivotTalonFX = new TalonFX(30);
   private TalonFX rPivotTalonFX = new TalonFX(31);
@@ -94,7 +98,8 @@ public class s_Intake extends SubsystemBase {
     pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
     pivotConfigs.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Rotations.convertFrom(140, Degrees);
-    pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Rotations.convertFrom(0, Degrees);
+    // pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
+    // Rotations.convertFrom(0, Degrees);
 
     lPivotTalonFX.setControl(new Follower(31, MotorAlignmentValue.Aligned));
 
@@ -139,13 +144,30 @@ public class s_Intake extends SubsystemBase {
     return intakeSysidRoutine;
   }
 
-  // public void overrideDeg(double deg){
-  // }
+  public void overrideDeg(double deg) {
+    rPivotTalonFX.setPosition(Degrees.of(deg));
+    lPivotTalonFX.setPosition(Degrees.of(deg));
+  }
 
   public void setSpeed(double dutyCycle) {
     intakeRollerBlack.set(-dutyCycle);
     intakeRollerBlue.set(dutyCycle);
+  }
 
+  public void setLeftVoltage(double volts) {
+    lPivotTalonFX.setControl(m_VoltageOut.withOutput(volts));
+  }
+
+  public void setRightVoltage(double volts) {
+    rPivotTalonFX.setControl(m_VoltageOut.withOutput(volts));
+  }
+
+  public Angle getLeftAngle() {
+    return lPivotTalonFX.getPosition().getValue();
+  }
+
+  public Angle getRightAngle() {
+    return rPivotTalonFX.getPosition().getValue();
   }
 
   public TalonFX getLeftPivotTalonFX() {

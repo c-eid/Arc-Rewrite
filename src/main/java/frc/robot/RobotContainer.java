@@ -15,8 +15,10 @@ import frc.robot.IO.TurretIO;
 
 import frc.robot.commands.Aiming.HoodTrack;
 import frc.robot.commands.Aiming.TurretTrack;
+import frc.robot.commands.Development.TouchboardShootAngle;
 import frc.robot.commands.Development.Zero;
 import frc.robot.commands.Emergency.Reverse;
+import frc.robot.commands.Intake.HomeIntake;
 import frc.robot.commands.Intake.Intaking;
 import frc.robot.commands.Intake.StoreIntake;
 import frc.robot.commands.Launch.Shoot;
@@ -65,7 +67,11 @@ public class RobotContainer {
 
   Belt belt = new Belt(s_Belt);
   Serialize serialize = new Serialize(s_Serializer);
+  
   Zero zeroAll = new Zero(s_Turret, s_Hood, s_Intake);
+  TouchboardShootAngle touchboardShootAngle = new TouchboardShootAngle(s_Shooter, s_Hood);
+
+  HomeIntake homeIntake = new HomeIntake(s_Intake);
 
   Reverse reverseAll = new Reverse(s_Shooter, s_Belt, s_Serializer, s_Intake);
 
@@ -108,9 +114,18 @@ public class RobotContainer {
     driver.pov(0).onTrue(
         intakeUp);
 
+    driver.pov(180).onTrue(
+        homeIntake);
+
     driver.rightStick().toggleOnTrue(
         zeroAll);
 
+    driver.x().whileTrue(
+        touchboardShootAngle);
+
+    driver.y().whileTrue(
+        belt).whileTrue(
+        serialize);
     // driver.rightBumper().whileTrue()
 
   }
