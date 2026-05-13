@@ -10,6 +10,7 @@ import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.IO.TurretIO;
 
@@ -133,6 +134,6 @@ public class RobotContainer {
   PathConstraints constraints = new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
   public Command getAutonomousCommand() {
-    return s_Hood.getSysIdRoutine();
+    return Commands.none(); //s_Hood.getSysIdRoutine();
   }
 }

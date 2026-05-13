@@ -33,8 +33,8 @@ public class HomeIntake extends Command {
 
   @Override
   public void initialize() {
-    intake.setLeftVoltage(-1);
-    intake.setRightVoltage(-1);
+    intake.setLeftVoltage(-3);
+    intake.setRightVoltage(-3);
 
     
   }
@@ -43,11 +43,11 @@ public class HomeIntake extends Command {
   @Override
   public void execute() {
 
-    if(right.get().getStatorCurrent().getValue().gte(Amps.of(15))){
+    if(right.get().getStatorCurrent().getValue().gte(Amps.of(25))){
       rightHomed = true;
     }
 
-    if(left.get().getStatorCurrent().getValue().gte(Amps.of(15))){
+    if(left.get().getStatorCurrent().getValue().gte(Amps.of(25))){
       leftHomed = true;
     }
 

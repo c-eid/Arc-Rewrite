@@ -150,7 +150,7 @@ public class s_Drivetrain extends SubsystemBase {
     drivetrain.setDefaultCommand(trenchDrive);
   }
   
-  DoubleSupplier setSpeedModifier = ()->1;
+  DoubleSupplier setSpeedModifier = ()->0.3;
 
   public void setSpeedModifier(double modifier){
     setSpeedModifier = ()-> modifier;

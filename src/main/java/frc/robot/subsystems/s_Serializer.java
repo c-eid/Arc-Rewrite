@@ -60,11 +60,11 @@ public class s_Serializer extends SubsystemBase {
 
   }
 
-  // final double primaryVoltage = 6;
-  // final double secondaryVoltage = 3;
+  final double primaryVoltage = 6;
+  final double secondaryVoltage = 3;
 
-  final double primarySetpoint = 4000;
-  final double secondarySetpoint = 500;
+  // final double primarySetpoint = 4000;
+  // final double secondarySetpoint = 500;
   double rounded;
 
   // public double timeout = 100; 
@@ -72,22 +72,23 @@ public class s_Serializer extends SubsystemBase {
   public void setFromBeamBreaks() {
 
     if (!beamBreakLeft.get() && !beamBreakRight.get()) {
-      m_ControllerLeft.setSetpoint(primarySetpoint, ControlType.kVelocity);
-      m_ControllerRight.setSetpoint(secondarySetpoint, ControlType.kVelocity);
+      SpindexFlexLeft.setVoltage(primaryVoltage);
+      SpindexFlexRight.setVoltage(secondaryVoltage);
 
     } else if (!beamBreakLeft.get() && beamBreakRight.get()) {
 
-      m_ControllerLeft.setSetpoint(-primarySetpoint, ControlType.kVelocity);
-      m_ControllerRight.setSetpoint(-secondarySetpoint, ControlType.kVelocity);
-
+      SpindexFlexLeft.setVoltage(-primaryVoltage);
+      SpindexFlexRight.setVoltage(-secondaryVoltage);
+    
     } else if (!beamBreakRight.get() && beamBreakLeft.get()) {
-      m_ControllerLeft.setSetpoint(secondarySetpoint, ControlType.kVelocity);
-      m_ControllerRight.setSetpoint(primarySetpoint, ControlType.kVelocity);
-
+      
+      SpindexFlexLeft.setVoltage(secondaryVoltage);
+      SpindexFlexRight.setVoltage(primaryVoltage);
 
     } else {
-      m_ControllerLeft.setSetpoint(-primarySetpoint, ControlType.kVelocity);
-      m_ControllerRight.setSetpoint(primarySetpoint, ControlType.kVelocity);
+       SpindexFlexLeft.setVoltage(-primaryVoltage);
+      SpindexFlexRight.setVoltage(primaryVoltage);
+   
       // SpindexFlexLeft.setVoltage(-primaryVoltage);
       // SpindexFlexRight.setVoltage(primaryVoltage);
       // rounded = Math.round(Timer.getTimestamp() * 2) / 2.0;

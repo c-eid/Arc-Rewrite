@@ -33,7 +33,7 @@ public class Reverse extends Command {
     s_Index.setIndexRpm(-3000);
     s_Shooter.setRPM(-2000);
     s_Intake.setSpeed(-1);
-    s_Serializer.setVoltage(-12);
+    s_Serializer.setDiffVoltage(-12);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

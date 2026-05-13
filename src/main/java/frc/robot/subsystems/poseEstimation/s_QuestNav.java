@@ -15,6 +15,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTable;
@@ -64,6 +65,12 @@ public class s_QuestNav extends SubsystemBase {
         initialized = true;
       }
     });
+
+    Touchboard.bindActionButton("resetPoseDEMO",()-> Commands.runOnce(()->{
+      setPose(new Pose3d( 3.828, 4.034, 0, new Rotation3d()));
+      s_Swerve.resetPose(new Pose2d( 3.828, 4.034, new Rotation2d()));
+      trustQuest = true;
+    }));
 
     questNav.onDisconnected(() -> {
       DriverStation.reportError("Quest disconnected!", false);
