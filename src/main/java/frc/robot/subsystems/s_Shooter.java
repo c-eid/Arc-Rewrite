@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.CANBus;
@@ -17,6 +18,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
@@ -40,6 +42,8 @@ public class s_Shooter extends SubsystemBase {
   private TalonFX rightTalonFlywheel = new TalonFX(6, turretBus);
 
   final VelocityVoltage m_request = new VelocityVoltage(0);
+  final VoltageOut m_Voltage = new VoltageOut(0);
+
 
   public double offset = 0;
 
@@ -50,7 +54,7 @@ public class s_Shooter extends SubsystemBase {
           Seconds.of(15), // Timeout
           (state) -> SignalLogger.writeString("sysid-test-state", state.toString())),
       new SysIdRoutine.Mechanism(
-          (voltage) -> leftTalonFlywheel.setVoltage(voltage.in(Volts)),
+          (voltage) -> leftTalonFlywheel.setControl(m_Voltage.withOutput(voltage).withEnableFOC(true)),
           null, // Phoenix 6 handles logging automatically via SignalLogger
           this));
 
@@ -58,17 +62,23 @@ public class s_Shooter extends SubsystemBase {
     var talonFXConfigs = new TalonFXConfiguration();
     // set slot 0 gains
     var slot0Configs = talonFXConfigs.Slot0;
-    slot0Configs.kS = 0.34934; // Add 0.25 V output to overcome static friction
-    slot0Configs.kV = 0.11527; // A velocity target of 1 rps results in 0.12 V output
-    slot0Configs.kA = 0.010836; // An acceleration of 1 rps/s requires 0.01 V output
-    slot0Configs.kP = 0.00015607; // A position error of 2.5 rotations results in 12 V output
+    slot0Configs.kS = 0.35299; // Add 0.25 V output to overcome static friction
+    slot0Configs.kV = 0.11564; // A velocity target of 1 rps results in 0.12 V output
+    slot0Configs.kA = 0.011587; // An acceleration of 1 rps/s requires 0.01 V output
+    slot0Configs.kP = 0.049345; // A position error of 2.5 rotations results in 12 V output
 
     talonFXConfigs.CurrentLimits.SupplyCurrentLimit = 50;
     talonFXConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     talonFXConfigs.Feedback.SensorToMechanismRatio = ratio;
+    talonFXConfigs.MotionMagic.MotionMagicJerk = 90;
+    talonFXConfigs.MotionMagic.MotionMagicAcceleration = 300;
+    talonFXConfigs.MotionMagic.MotionMagicJerk = 3000;
+
+
 
     PhysicsSim.getInstance().addTalonFX(leftTalonFlywheel, 0.0012871344, ratio, 2);
+
 
     leftTalonFlywheel.getConfigurator().apply(talonFXConfigs);
 
@@ -92,14 +102,14 @@ public class s_Shooter extends SubsystemBase {
     currentRpm = rpm + offset;
     SmartDashboard.putNumber("Shooter/Shooter Rpm Setpoint", rpm + offset);
 
-    leftTalonFlywheel.setControl(m_request.withVelocity(RPM.of(rpm + offset)));
+    leftTalonFlywheel.setControl(m_request.withVelocity(RPM.of(rpm + offset)).withEnableFOC(true));
   }
 
   public void setRPM(Supplier<Double> rpm) {
     currentRpm = rpm.get() + offset;
     SmartDashboard.putNumber("Shooter/Shooter Rpm Setpoint", currentRpm);
 
-    leftTalonFlywheel.setControl(m_request.withVelocity(RPM.of(currentRpm)));
+    leftTalonFlywheel.setControl(m_request.withVelocity(RPM.of(currentRpm)).withEnableFOC(true));
   }
 
   public double getVelocity() {
@@ -128,9 +138,20 @@ public class s_Shooter extends SubsystemBase {
     return shooterSysidRoutine;
   }
 
+  BooleanSupplier trenchShot = () -> false;
+  
+  public void setTrenchShot(boolean doTrenchShot) {
+    this.trenchShot = () -> doTrenchShot;
+  }
+
+  public boolean getTrenchShot() {
+    return trenchShot.getAsBoolean();
+  }
+
 
   @Override
   public void periodic() {
+    SmartDashboard.putBoolean("Shooter/TrenchShot", trenchShot.getAsBoolean());
     SmartDashboard.putBoolean("Shooter/At Setpoint", atSetpoint());
     SmartDashboard.putNumber("Shooter/Shooter Rpm", leftTalonFlywheel.getVelocity().getValue().in(RPM));
 

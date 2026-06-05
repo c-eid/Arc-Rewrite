@@ -20,12 +20,18 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringSubscriber;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.Constants.QuestNavConstants;
+import frc.robot.LimelightHelpers;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.util.Touchboard;
 import gg.questnav.questnav.PoseFrame;
@@ -40,6 +46,9 @@ public class s_QuestNav extends SubsystemBase {
   private final NetworkTableInstance networkTable = NetworkTableInstance.getDefault();
 
   private final NetworkTable tbTable = networkTable.getTable("touchboard");
+  private final NetworkTable llTable = networkTable.getTable("LimelightBackup");
+
+  StructPublisher<Pose2d> limelightPosePublisher = llTable.getStructTopic("Limelight Pose", Pose2d.struct).publish();
 
   StringSubscriber initalPose = tbTable.getStringTopic("initalPose").subscribe("BlueLeft");
 
@@ -51,9 +60,11 @@ public class s_QuestNav extends SubsystemBase {
 
   boolean trustQuest = false;
   boolean initialized = false;
+  CommandXboxController driver;
 
-  public s_QuestNav(CommandSwerveDrivetrain s_Swerve) {
+  public s_QuestNav(CommandSwerveDrivetrain s_Swerve, CommandXboxController driver) {
     this.s_Swerve = s_Swerve;
+    this.driver = driver;
 
     Touchboard.bindOptGroup("initalPose",
         () -> Commands.runOnce(() -> setPoseFromString(() -> initalPose.get())).ignoringDisable(true));
@@ -67,10 +78,23 @@ public class s_QuestNav extends SubsystemBase {
 
     questNav.onDisconnected(() -> {
       DriverStation.reportError("Quest disconnected!", false);
+      driver.setRumble(RumbleType.kBothRumble, 1);
+
+      CommandScheduler.getInstance()
+          .schedule(new WaitCommand(.5).andThen(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 0))));
 
     });
-    questNav.onTrackingLost(() -> DriverStation.reportError("Quest tracking lost!", false));
-    questNav.onLowBattery(20, level -> DriverStation.reportWarning("Quest battery low: " + level + "%", false));
+    questNav.onTrackingLost(() -> {
+      DriverStation.reportError("Quest tracking lost!", false);
+      driver.setRumble(RumbleType.kBothRumble, .6);
+
+      CommandScheduler.getInstance()
+          .schedule(new WaitCommand(.5).andThen(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 0))));
+
+    });
+    questNav.onLowBattery(20, level -> {
+      DriverStation.reportWarning("Quest battery low: " + level + "%", false);
+    });
     questNav.onCommandFailure(
         response -> DriverStation.reportError("Pose reset failed: " + response.getErrorMessage(), false));
   }
@@ -84,6 +108,15 @@ public class s_QuestNav extends SubsystemBase {
         || pose.getY() > FIELD_LAYOUT.getFieldWidth();
   }
 
+  private boolean shouldReject(Pose2d pose) {
+    return pose.getX() < 0.0
+        || pose.getX() > FIELD_LAYOUT.getFieldLength()
+        || pose.getY() < 0.0
+        || pose.getY() > FIELD_LAYOUT.getFieldWidth();
+  }
+
+  boolean doRejectUpdate = false;
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
@@ -94,13 +127,54 @@ public class s_QuestNav extends SubsystemBase {
     SmartDashboard.putBoolean("QuestNav/Tracking", questNav.isTracking());
     SmartDashboard.putNumber("QuestNav/Latency", questNav.getLatency());
     questNav.getBatteryPercent().ifPresent(
-        b -> SmartDashboard.putNumber("QuestNav/Battery%", b));
+        b -> SmartDashboard.putNumber("QuestNav/Battery", b));
     questNav.getTrackingLostCounter().ifPresent(
         c -> SmartDashboard.putNumber("QuestNav/TrackingLostCount", c));
 
-    if (!trustQuest) {
+
+    if (!trustQuest && questNav.isTracking()) {
+      LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-rsl");
+      doRejectUpdate = false;
+
+      if (mt2.tagCount == 0) {
+        doRejectUpdate = true;
+      }
+      if(shouldReject(mt2.pose)){
+        doRejectUpdate = true;
+      }
+      if (!doRejectUpdate) {
+        limelightPosePublisher.set(mt2.pose);
+        setPose(new Pose3d(mt2.pose));
+
+        trustQuest = true;
+      }
+
       return;
     }
+
+    if (!questNav.isTracking()) {
+      LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-rsl");
+      
+
+
+      doRejectUpdate = false;
+
+      if (mt2.tagCount == 0) {
+        doRejectUpdate = true;
+      }
+      if(shouldReject(mt2.pose)){
+        doRejectUpdate = true;
+      }
+      if (!doRejectUpdate) {
+        limelightPosePublisher.set(mt2.pose);
+        s_Swerve.addVisionMeasurement(
+            mt2.pose,
+            mt2.timestampSeconds,
+            VecBuilder.fill(.7, .7, 9999999));
+      }
+      return;
+    }
+
     // Get the latest pose data frames from the Quest
     PoseFrame[] questFrames = questNav.getAllUnreadPoseFrames();
 
@@ -111,10 +185,10 @@ public class s_QuestNav extends SubsystemBase {
         // Get the pose of the Quest
         Pose3d questPose = questFrame.questPose3d();
 
-        if (shouldReject(questPose)) {
-          trustQuest = false;
-          return;
-        }
+        // if (shouldReject(questPose)) {
+        //   trustQuest = false;
+        //   return;
+        // }
         // Get timestamp for when the data was sent
         double timestamp = questFrame.dataTimestamp();
 
@@ -127,6 +201,7 @@ public class s_QuestNav extends SubsystemBase {
         s_Swerve.addVisionMeasurement(robotPose.toPose2d(), timestamp, QUESTNAV_STD_DEVS);
       }
     }
+
   }
 
   Pose2d BlueLeft = new Pose2d(4.401, 7.215, new Rotation2d());
@@ -137,7 +212,9 @@ public class s_QuestNav extends SubsystemBase {
   public void setPoseFromString(Supplier<String> whereSupplier) {
     System.out.println(whereSupplier.get());
 
-    trustQuest = true;
+    if(questNav.isTracking()){
+      trustQuest = true;
+    }
 
     String where = whereSupplier.get();
     if (where.equals("BlueLeft")) {

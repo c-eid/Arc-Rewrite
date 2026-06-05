@@ -4,50 +4,47 @@
 
 package frc.robot.commands.Emergency;
 
+import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.Degrees;
+
+import java.util.function.DoubleSupplier;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.s_Belt;
-import frc.robot.subsystems.s_Intake;
-import frc.robot.subsystems.s_Serializer;
-import frc.robot.subsystems.s_Shooter;
+import frc.robot.subsystems.s_Turret;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class Reverse extends Command {
-  /** Creates a new Reverse. */
-  s_Shooter s_Shooter;
-  s_Belt s_Index;
-  s_Serializer s_Serializer;
-  s_Intake s_Intake;
+public class Zeroing extends Command {
+  /** Creates a new Zeroing. */
+  s_Turret s_Turret;
+  double currentDeg = 0;
+  DoubleSupplier rightStick;
 
-  public Reverse(s_Shooter s_Shooter, s_Belt s_Index, s_Serializer s_Serializer, s_Intake s_Intake) {
-    addRequirements(s_Index, s_Intake, s_Shooter, s_Serializer);
-
-    this.s_Shooter = s_Shooter;
-    this.s_Index = s_Index;
-    this.s_Serializer = s_Serializer;
-    this.s_Intake = s_Intake;
+  public Zeroing(s_Turret s_Turret, DoubleSupplier rightStick) {
+    addRequirements(s_Turret);
+    this.s_Turret = s_Turret;
+    this.rightStick = rightStick;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    s_Index.setIndexRpm(-3000);
-    s_Shooter.setRPM(-2000);
-    s_Intake.setSpeed(-1);
-    s_Serializer.setDiffVoltage(-12);
+    currentDeg = 0;
+    s_Turret.setDegrees(0);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    currentDeg += rightStick.getAsDouble();
+    SmartDashboard.putNumber("CurrentDegzeroing", currentDeg);
+    s_Turret.setDegrees(currentDeg);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-      s_Index.setIndexRpm(0);
-    s_Shooter.setRPM(0);
-    s_Intake.setSpeed(0);
-    s_Serializer.setVoltage(0);
+    s_Turret.overridePosition(s_Turret.getAngle().in(Degrees));
   }
 
   // Returns true when the command should end.

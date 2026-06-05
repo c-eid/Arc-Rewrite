@@ -261,13 +261,13 @@ public class u_Dist {
     public double findSpeedModifier() {
         switch (alliance) {
             case "":
-                return 1;
+                return -1;
             case "blue":
-                return 1;
+                return -1;
             case "red":
                 return -1;
         }
-        return 1;
+        return -1;
 
     }
 

@@ -4,6 +4,7 @@
 
 package frc.robot.commands.Intake;
 
+import static edu.wpi.first.units.Units.Amp;
 import static edu.wpi.first.units.Units.Amps;
 
 import java.util.function.Supplier;
@@ -33,8 +34,11 @@ public class HomeIntake extends Command {
 
   @Override
   public void initialize() {
-    intake.setLeftVoltage(-1);
-    intake.setRightVoltage(-1);
+    leftHomed = false;
+    rightHomed = false; 
+
+    intake.setLeftVoltage(-2);
+    intake.setRightVoltage(-2);
 
     
   }
@@ -43,15 +47,16 @@ public class HomeIntake extends Command {
   @Override
   public void execute() {
 
-    if(right.get().getStatorCurrent().getValue().gte(Amps.of(15))){
+    if(right.get().getStatorCurrent().getValue().gte(Amps.of(20))){
       rightHomed = true;
     }
 
-    if(left.get().getStatorCurrent().getValue().gte(Amps.of(15))){
+    if(left.get().getStatorCurrent().getValue().gte(Amps.of(20))){
       leftHomed = true;
     }
 
     System.out.println(rightHomed + " , " + leftHomed);
+    System.out.println(right.get().getStatorCurrent().getValue().in(Amps) + ", " + left.get().getStatorCurrent().getValue().in(Amps));
 
   }
 
@@ -59,7 +64,7 @@ public class HomeIntake extends Command {
   @Override
   public void end(boolean interrupted) {
     intake.setSpeed(0);
-    intake.overrideDeg(2);
+    intake.overrideDeg(3);
 
     left.get().setControl(new Follower(31, MotorAlignmentValue.Aligned));
 

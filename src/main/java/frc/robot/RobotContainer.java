@@ -8,22 +8,31 @@ import org.w3c.dom.ranges.DocumentRange;
 
 import com.pathplanner.lib.path.PathConstraints;
 
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.IO.TurretIO;
 
 import frc.robot.commands.Aiming.HoodTrack;
 import frc.robot.commands.Aiming.TurretTrack;
 import frc.robot.commands.Development.TouchboardShootAngle;
 import frc.robot.commands.Development.Zero;
+import frc.robot.commands.Emergency.Lock;
 import frc.robot.commands.Emergency.Reverse;
+import frc.robot.commands.Emergency.TrenchShot;
+import frc.robot.commands.Emergency.Zeroing;
+import frc.robot.commands.Intake.Bounce;
 import frc.robot.commands.Intake.HomeIntake;
 import frc.robot.commands.Intake.Intaking;
 import frc.robot.commands.Intake.StoreIntake;
 import frc.robot.commands.Launch.Shoot;
 import frc.robot.commands.Serialization.Belt;
 import frc.robot.commands.Serialization.Serialize;
+import frc.robot.commands.Serialization.SerializeUnjam;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.s_Hood;
 import frc.robot.subsystems.s_Belt;
 import frc.robot.subsystems.s_Intake;
@@ -45,13 +54,15 @@ public class RobotContainer {
 
   // Subsystems
   s_Drivetrain s_Swerve = new s_Drivetrain();
-  s_QuestNav s_QNav = new s_QuestNav(s_Swerve.getDrivetrain());
+  s_QuestNav s_QNav = new s_QuestNav(s_Swerve.getDrivetrain(), driver);
   s_Intake s_Intake = new s_Intake();
   s_Belt s_Belt = new s_Belt();
   s_Turret s_Turret = new s_Turret(turretSimulation);
   s_Hood s_Hood = new s_Hood(turretSimulation);
   s_Shooter s_Shooter = new s_Shooter();
   s_Serializer s_Serializer = new s_Serializer();
+
+  Bounce bounce = new Bounce(s_Intake);
 
   // Util
   u_Dist u_Dist = new u_Dist(s_Swerve);
@@ -61,12 +72,13 @@ public class RobotContainer {
   StoreIntake intakeUp = new StoreIntake(s_Intake);
 
   HoodTrack hoodTrack = new HoodTrack(s_Hood, u_Dist);
-  TurretTrack turretTrack = new TurretTrack(s_Turret, u_Dist);
+  TurretTrack turretTrack = new TurretTrack(s_Turret, u_Dist, TunerConstants.getInstance());
 
   Shoot revShooter = new Shoot(s_Shooter, u_Dist);
 
   Belt belt = new Belt(s_Belt);
   Serialize serialize = new Serialize(s_Serializer);
+  SerializeUnjam serializeUnjam = new SerializeUnjam(s_Belt, s_Serializer);
   
   Zero zeroAll = new Zero(s_Turret, s_Hood, s_Intake);
   TouchboardShootAngle touchboardShootAngle = new TouchboardShootAngle(s_Shooter, s_Hood);
@@ -74,6 +86,11 @@ public class RobotContainer {
   HomeIntake homeIntake = new HomeIntake(s_Intake);
 
   Reverse reverseAll = new Reverse(s_Shooter, s_Belt, s_Serializer, s_Intake);
+
+  Zeroing zeroTurret = new Zeroing(s_Turret, ()-> driver.getRightX());
+
+  Lock lockTurret = new Lock(s_Turret, s_Hood);
+  TrenchShot trenchShot = new TrenchShot(s_Shooter);
 
   public RobotContainer() {
     s_Swerve.bindControllers(s_QNav, driver);
@@ -89,6 +106,9 @@ public class RobotContainer {
   }
 
   private void configureModifierBindings() {
+    driver.rightTrigger(0.3).onTrue( Commands.runOnce(()-> s_Swerve.setSpeedModifier(0.2)));
+
+    driver.rightTrigger(0.3).onFalse( Commands.runOnce(()-> s_Swerve.setSpeedModifier(1)));
 
   }
 
@@ -100,11 +120,29 @@ public class RobotContainer {
     driver.leftBumper().whileTrue(
         reverseAll);
 
-    driver.rightTrigger(0.3).and(() -> s_Shooter.atSetpoint()).whileTrue(
-        belt).whileTrue(
-        serialize);
-    driver.rightTrigger(0.3).whileTrue(
+    driver.rightTrigger(0.3).debounce(0.3, DebounceType.kBoth).whileTrue(
+        bounce)
+        // .and(() -> s_Shooter.atSetpoint())
+        .whileTrue(serializeUnjam);
+        // .whileTrue(
+        // belt).whileTrue(
+        // serialize);
+
+    driver.leftStick().and(driver.x()).toggleOnTrue(zeroTurret);
+    driver.leftStick().and(driver.y()).toggleOnTrue(lockTurret)
+         .toggleOnTrue(Commands.run(()-> {}).beforeStarting(()-> s_Shooter.setTrenchShot(true)).finallyDo(()-> s_Shooter.setTrenchShot(false)));
+    
+    // driver.rightTrigger(0.3).whileTrue(5
+    //     belt);
+        
+    // driver.rightTrigger(0.3).whileTrue(
+    //     Commands.waitSeconds(1).andThen(serialize) );
+
+    driver.rightTrigger(0.3).and(new Trigger(()-> !s_Shooter.getTrenchShot())).whileTrue(
         revShooter);
+
+    driver.rightTrigger(0.3).and(new Trigger(()-> s_Shooter.getTrenchShot())).whileTrue(
+        trenchShot);
 
     driver.rightBumper().whileTrue(
         revShooter).whileTrue(
@@ -133,6 +171,6 @@ public class RobotContainer {
   PathConstraints constraints = new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
   public Command getAutonomousCommand() {
-    return s_Hood.getSysIdRoutine();
+    return s_Serializer.getSysIdRoutine();
   }
 }

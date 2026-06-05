@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.s_Turret;
+import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.util.u_Dist;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -28,9 +29,12 @@ public class TurretTrack extends Command {
   private double previousRotation = 0.0;
   private double currentRotation = 0.0;
 
-  public TurretTrack(s_Turret s_Turret, u_Dist u_Dist) {
+  private CommandSwerveDrivetrain drivetrain;
+
+  public TurretTrack(s_Turret s_Turret, u_Dist u_Dist, CommandSwerveDrivetrain drivetrain) {
     addRequirements(s_Turret);
 
+    this.drivetrain = drivetrain;
     this.s_Turret = s_Turret;
     this.u_Dist = u_Dist;
   }
@@ -52,7 +56,7 @@ public class TurretTrack extends Command {
         translatedGoalPose.getX() - translatedTurretPose.getX()));
 
     robotRealtiveRotation = Rotation2d
-        .fromRadians(toGoal.getRadians() - robotPose.getRotation().getRadians());
+        .fromRadians(toGoal.getRadians() - robotPose.getRotation().getRadians() - (drivetrain.getState().Speeds.omegaRadiansPerSecond * 0.05));
 
     currentRotationChange = (robotRealtiveRotation.getDegrees() - previousRotation);
 

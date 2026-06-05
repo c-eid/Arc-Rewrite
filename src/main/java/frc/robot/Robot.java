@@ -29,6 +29,7 @@ public class Robot extends TimedRobot {
   public void robotInit(){
     DataLogManager.start();
     SignalLogger.start();
+    // CameraServer.startAutomaticCapture();
   }
 
   @Override
