@@ -4,8 +4,8 @@
 
 package frc.robot;
 
-import org.w3c.dom.ranges.DocumentRange;
-
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
@@ -27,11 +27,13 @@ import frc.robot.commands.Emergency.Zeroing;
 import frc.robot.commands.Intake.Bounce;
 import frc.robot.commands.Intake.HomeIntake;
 import frc.robot.commands.Intake.Intaking;
+import frc.robot.commands.Intake.OpenIntake;
 import frc.robot.commands.Intake.StoreIntake;
 import frc.robot.commands.Launch.Shoot;
 import frc.robot.commands.Serialization.Belt;
 import frc.robot.commands.Serialization.Serialize;
 import frc.robot.commands.Serialization.SerializeUnjam;
+import frc.robot.commands.Serialization.StopSerializer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.s_Hood;
 import frc.robot.subsystems.s_Belt;
@@ -92,7 +94,7 @@ public class RobotContainer {
   Lock lockTurret = new Lock(s_Turret, s_Hood);
   TrenchShot trenchShot = new TrenchShot(s_Shooter);
 
-
+ public Command currentAuto;
 
   public RobotContainer() {
     s_Swerve.bindControllers(s_QNav, driver);
@@ -100,6 +102,10 @@ public class RobotContainer {
     configureDefaults();
     configureModifierBindings();
     configureCommandBindings();
+    bindNamedCommands();
+
+    currentAuto = new PathPlannerAuto("2 swipe right side mid");
+
   }
 
   private void configureDefaults() {
@@ -169,10 +175,35 @@ public class RobotContainer {
     // driver.rightBumper().whileTrue()
 
   }
+  private void bindNamedCommands(){
+      NamedCommands.registerCommand("intake",new Intaking(s_Intake));
+
+        NamedCommands.registerCommand("sintake",new OpenIntake(s_Intake));
+
+        NamedCommands.registerCommand("revshoot", new Shoot(s_Shooter, u_Dist));
+        NamedCommands.registerCommand("intakeup", new StoreIntake(s_Intake));
+
+        NamedCommands.registerCommand("spindex",  new SerializeUnjam(s_Belt, s_Serializer));
+
+        NamedCommands.registerCommand("stopspindexer", new StopSerializer(s_Belt, s_Serializer));
+        NamedCommands.registerCommand("outtakeshooter", new Reverse(s_Shooter, s_Belt, s_Serializer, s_Intake));
+
+        NamedCommands.registerCommand("stopshoot",Commands.runOnce(() -> s_Shooter.setRPM(0), s_Shooter));
+        NamedCommands.registerCommand("Zero", Commands.runOnce(() -> s_Swerve.getDrivetrain().seedFieldCentric()));
+        
+        NamedCommands.registerCommand("shoot",Commands.none());
+        NamedCommands.registerCommand("outtakespindexer",Commands.none());        
+        NamedCommands.registerCommand("track turret", Commands.none());
+        NamedCommands.registerCommand("track left", Commands.none());
+        NamedCommands.registerCommand("zerohood", Commands.none());
+        NamedCommands.registerCommand("track right", Commands.none());
+        NamedCommands.registerCommand("sethood", Commands.none());
+
+  }
 
   PathConstraints constraints = new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
   public Command getAutonomousCommand() {
-    return s_Serializer.getSysIdRoutine();
+    return currentAuto;
   }
 }

@@ -101,12 +101,12 @@ public class s_QuestNav extends SubsystemBase {
 
   private static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
-  private boolean shouldReject(Pose3d pose) {
-    return pose.getX() < 0.0
-        || pose.getX() > FIELD_LAYOUT.getFieldLength()
-        || pose.getY() < 0.0
-        || pose.getY() > FIELD_LAYOUT.getFieldWidth();
-  }
+  // private boolean shouldReject(Pose3d pose) {
+  //   return pose.getX() < 0.0
+  //       || pose.getX() > FIELD_LAYOUT.getFieldLength()
+  //       || pose.getY() < 0.0
+  //       || pose.getY() > FIELD_LAYOUT.getFieldWidth();
+  // }
 
   private boolean shouldReject(Pose2d pose) {
     return pose.getX() < 0.0

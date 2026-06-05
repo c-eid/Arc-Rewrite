@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.904187425860025,
+        "y": 2.3335663338088444
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.536219686162624,
+        "y": 0.6903566333808837
+      },
+      "isLocked": false,
+      "linkedName": "hp side ccend2"
+    },
+    {
+      "anchor": {
+        "x": 4.052396204033215,
+        "y": 0.4898457888493476
+      },
+      "prevControl": {
+        "x": 7.0667047075606275,
+        "y": 0.9879457917261072
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "hp trench shot"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0.0,
+    "rotation": -58.32453126189097
+  },
+  "useDefaultConstraints": true
+}

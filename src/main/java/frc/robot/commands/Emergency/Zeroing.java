@@ -4,7 +4,6 @@
 
 package frc.robot.commands.Emergency;
 
-import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
 
 import java.util.function.DoubleSupplier;

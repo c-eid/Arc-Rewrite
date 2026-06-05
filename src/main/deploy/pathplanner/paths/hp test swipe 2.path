@@ -1,0 +1,161 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.052396204033215,
+        "y": 0.4898457888493476
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 4.491332679585858,
+        "y": 0.5428489220982691
+      },
+      "isLocked": false,
+      "linkedName": "hp trench shot"
+    },
+    {
+      "anchor": {
+        "x": 5.203537803138373,
+        "y": 0.6774179743223976
+      },
+      "prevControl": {
+        "x": 5.460751256093239,
+        "y": 0.566034005483143
+      },
+      "nextControl": {
+        "x": 4.974124435913459,
+        "y": 0.7767633664577472
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.648944365192582,
+        "y": 0.8973751783166914
+      },
+      "prevControl": {
+        "x": 7.273723252496433,
+        "y": 0.27631954350927335
+      },
+      "nextControl": {
+        "x": 8.258577545475088,
+        "y": 1.90642320085325
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.7653922967189715,
+        "y": 2.838174037089873
+      },
+      "prevControl": {
+        "x": 7.974123592702311,
+        "y": 2.698923877052479
+      },
+      "nextControl": {
+        "x": 7.273344698220171,
+        "y": 3.1664319847741638
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.212753209700427,
+        "y": 1.9842225392296724
+      },
+      "prevControl": {
+        "x": 6.1973199376973485,
+        "y": 3.064551579445075
+      },
+      "nextControl": {
+        "x": 6.225691868758916,
+        "y": 1.0785164051355207
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.203537803138373,
+        "y": 0.6774179743223976
+      },
+      "prevControl": {
+        "x": 5.785777460770328,
+        "y": 0.7938659058487882
+      },
+      "nextControl": {
+        "x": 4.794381478206457,
+        "y": 0.5955867093360147
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.052396204033215,
+        "y": 0.4898457888493476
+      },
+      "prevControl": {
+        "x": 4.509134987411233,
+        "y": 0.43574326392373236
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "hp trench shot"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 2.21321961620467,
+      "rotationDegrees": -73.04335087873838
+    },
+    {
+      "waypointRelativePos": 2.968017057569279,
+      "rotationDegrees": -72.54923363023593
+    },
+    {
+      "waypointRelativePos": 3.9658848614071855,
+      "rotationDegrees": 83.98571596759456
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 2.3173531397703613,
+      "maxWaypointRelativePos": 3.095205941931082,
+      "constraints": {
+        "maxVelocity": 1.5,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": true
+}

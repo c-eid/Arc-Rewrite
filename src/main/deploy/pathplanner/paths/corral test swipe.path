@@ -1,0 +1,137 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.402,
+        "y": 7.215
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.334904939997326,
+        "y": 7.173015966045782
+      },
+      "isLocked": false,
+      "linkedName": "start corral"
+    },
+    {
+      "anchor": {
+        "x": 5.656390870185448,
+        "y": 7.327888730385164
+      },
+      "prevControl": {
+        "x": 5.4084129177954665,
+        "y": 7.359620971536272
+      },
+      "nextControl": {
+        "x": 6.509197178624789,
+        "y": 7.218760256769793
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.403109843081312,
+        "y": 6.900912981455065
+      },
+      "prevControl": {
+        "x": 7.237187707844924,
+        "y": 7.170964979410166
+      },
+      "nextControl": {
+        "x": 7.800642504383832,
+        "y": 6.253895696605115
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.545435092724677,
+        "y": 5.283580599144081
+      },
+      "prevControl": {
+        "x": 7.794730987792368,
+        "y": 5.264830753747406
+      },
+      "nextControl": {
+        "x": 7.091821532631748,
+        "y": 5.317697422925991
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.656390870185448,
+        "y": 7.327888730385164
+      },
+      "prevControl": {
+        "x": 6.395961056530356,
+        "y": 6.933548500733238
+      },
+      "nextControl": {
+        "x": 5.080649173133643,
+        "y": 7.6348752980261105
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.793223965763195,
+        "y": 7.327888730385164
+      },
+      "prevControl": {
+        "x": 3.548150944907,
+        "y": 7.278500326397801
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "corral trench shot"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.7057569296375272,
+      "rotationDegrees": 72.59746782667312
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 2.1066846725185613,
+      "maxWaypointRelativePos": 2.849426063470626,
+      "constraints": {
+        "maxVelocity": 1.5,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 2000.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -0.45096349994281076
+  },
+  "useDefaultConstraints": false
+}

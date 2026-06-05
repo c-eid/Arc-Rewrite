@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.402,
+        "y": 7.215
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.070427960057061,
+        "y": 7.793680456490728
+      },
+      "isLocked": false,
+      "linkedName": "start corral"
+    },
+    {
+      "anchor": {
+        "x": 6.828268090154213,
+        "y": 6.030830367734283
+      },
+      "prevControl": {
+        "x": 6.911440798858774,
+        "y": 7.133808844507846
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "corral ss1end"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 1.5,
+    "rotation": 180.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -0.45096349994281076
+  },
+  "useDefaultConstraints": true
+}

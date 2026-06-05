@@ -9,9 +9,8 @@ import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.revrobotics.spark.SparkClosedLoopController;
+// import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
@@ -32,8 +31,8 @@ public class s_Serializer extends SubsystemBase {
   private SparkFlex SpindexFlexRight = new SparkFlex(41, MotorType.kBrushless); // blue wheel
   private DigitalInput beamBreakRight = new DigitalInput(8);
 
-  private SparkClosedLoopController m_ControllerLeft = SpindexFlexLeft.getClosedLoopController();
-  private SparkClosedLoopController m_ControllerRight = SpindexFlexRight.getClosedLoopController();
+  // private SparkClosedLoopController m_ControllerLeft = SpindexFlexLeft.getClosedLoopController();
+  // private SparkClosedLoopController m_ControllerRight = SpindexFlexRight.getClosedLoopController();
 
   private SparkFlexConfig config = new SparkFlexConfig();
   private SparkFlexConfig config2 = new SparkFlexConfig();

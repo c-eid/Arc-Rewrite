@@ -6,9 +6,7 @@ package frc.robot.commands.Emergency;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.s_Hood;
-import frc.robot.subsystems.s_Shooter;
 import frc.robot.subsystems.s_Turret;
-import frc.robot.util.u_Dist;
 import frc.robot.util.u_Lut;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */

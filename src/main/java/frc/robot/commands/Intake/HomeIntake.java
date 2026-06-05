@@ -4,7 +4,6 @@
 
 package frc.robot.commands.Intake;
 
-import static edu.wpi.first.units.Units.Amp;
 import static edu.wpi.first.units.Units.Amps;
 
 import java.util.function.Supplier;

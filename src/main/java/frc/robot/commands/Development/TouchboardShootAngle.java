@@ -4,8 +4,6 @@
 
 package frc.robot.commands.Development;
 
-import static edu.wpi.first.units.Units.Feet;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.s_Hood;
 import frc.robot.subsystems.s_Shooter;
