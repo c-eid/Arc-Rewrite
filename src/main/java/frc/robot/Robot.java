@@ -29,14 +29,15 @@ public class Robot extends TimedRobot {
   public void robotInit(){
     DataLogManager.start();
     SignalLogger.start();
-    // CameraServer.startAutomaticCapture();
+
+    addPeriodic(()-> m_robotContainer.u_Dist.periodic(), getPeriod());    // CameraServer.startAutomaticCapture();
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
-    SmartDashboard.putNumber("uDist/GoalDistance", m_robotContainer.u_Dist.getDist(4).in(Feet));
+    SmartDashboard.putNumber("uDist/GoalDistance", m_robotContainer.u_Dist.getDist().in(Feet));
   }
 
   @Override

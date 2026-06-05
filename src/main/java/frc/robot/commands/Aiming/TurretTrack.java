@@ -48,7 +48,7 @@ public class TurretTrack extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    translatedGoalPose = u_Dist.getGoal(4);
+    translatedGoalPose = u_Dist.getGoal();
     robotPose = u_Dist.getDrivepose();
     translatedTurretPose = u_Dist.getTurretpose();
 
@@ -76,8 +76,7 @@ public class TurretTrack extends Command {
     }
 
     s_Turret.setDegrees(currentRotation);
-
-    SmartDashboard.putNumber("Turret/StoredRotation", currentRotation);
+  SmartDashboard.putNumber("Turret/StoredRotation", currentRotation);
 
 
     previousRotation = robotRealtiveRotation.getDegrees();

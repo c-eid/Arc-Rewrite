@@ -21,7 +21,6 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.FieldConstants;
@@ -39,7 +38,7 @@ public class u_Dist {
     // Network Tables
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable table = inst.getTable("uDist");
-    
+
     // Pose sender
     StructPublisher<Pose2d> virtualGoalPoseSender = table.getStructTopic("Virtual Goal", Pose2d.struct).publish();
 
@@ -88,7 +87,7 @@ public class u_Dist {
     }
 
     public void updateGoalPose() {
-            // setHubAsGoal(alliance);
+        // setHubAsGoal(alliance);
 
         if (inAllianceZone(getTurretpose())) {
             setHubAsGoal(alliance);
@@ -146,104 +145,65 @@ public class u_Dist {
 
     // Get the distance from the robot to the goal pose with speed compensation and
     // compensation for turret position relative to robot.
+    // --- NEW: Cached State Variables ---
+    // store cached distance as primitive feet to avoid Distance object allocations
+    private double cachedDistFeet = 0.0;
+    private Pose2d cachedGoalPose = new Pose2d();
 
-    public Distance getDist(double interationCount) {
+    // Set a constant iteration count for your speed compensation math
+    private static final int ITERATION_COUNT = 4;
+    // Publish to NetworkTables every N periodic cycles to reduce NT overhead
+    private static final int PUBLISH_EVERY = 2;
+    private int publishCounter = 0;
+
+    public void periodic() {
         updateGoalPose();
 
-        Distance rawDist = getRawDistFromTurret();
-        double tof = u_Lut.getTofFrom(rawDist.in(Feet));
-
-        // Speed compensation
+        // Cache values used across iterations to avoid repeated expensive calls
+        Pose2d turretPose = getTurretpose();
+        double rawDistMeters = turretPose.getTranslation().getDistance(this.goalPose.getTranslation());
+        double rawDistFeet = rawDistMeters * 3.28084; // meters -> feet
+        double tof = u_Lut.getTofFrom(rawDistFeet);
         double speedModifier = findSpeedModifier();
-
         ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
 
-        Pose2d translatedGoalPose = new Pose2d(
+        Pose2d prevPose = new Pose2d(
                 goalPose.getX() + speedModifier * fieldSpeeds.vxMetersPerSecond * tof,
                 goalPose.getY() + speedModifier * fieldSpeeds.vyMetersPerSecond * tof, new Rotation2d());
 
-        Distance compensatedDist = Meter
-                .of(getTurretpose().getTranslation().getDistance(translatedGoalPose.getTranslation()));
+        double prevDistMeters = turretPose.getTranslation().getDistance(prevPose.getTranslation());
+        double prevDistFeet = prevDistMeters * 3.28084;
 
-        if (interationCount <= 0) {
-            return compensatedDist;
-        } else {
-            return getDist(interationCount - 1, compensatedDist);
+        // Iteratively refine the goal pose and distance using cached turretPose and fieldSpeeds
+        for (int i = 0; i < ITERATION_COUNT; ++i) {
+            double tof2 = u_Lut.getTofFrom(prevDistFeet);
+            // assume speed modifier and field speeds change slowly relative to iterations
+            prevPose = new Pose2d(
+                    goalPose.getX() + speedModifier * fieldSpeeds.vxMetersPerSecond * tof2,
+                    goalPose.getY() + speedModifier * fieldSpeeds.vyMetersPerSecond * tof2, new Rotation2d());
+
+            // recompute prevDist in feet using cached turretPose
+            prevDistMeters = turretPose.getTranslation().getDistance(prevPose.getTranslation());
+            prevDistFeet = prevDistMeters * 3.28084;
+        }
+
+        // Save to cache (store feet as primitive)
+        this.cachedGoalPose = prevPose;
+        this.cachedDistFeet = prevDistFeet;
+
+        // Publish to NetworkTables at reduced frequency to lower NT overhead
+        publishCounter = (publishCounter + 1) % PUBLISH_EVERY;
+        if (publishCounter == 0) {
+            virtualGoalPoseSender.set(prevPose);
         }
     }
 
-    private Distance getDist(double interationCount, Distance prevDist) {
-        updateGoalPose();
-
-        double tof = u_Lut.getTofFrom(prevDist.in(Feet));
-
-        // Speed compensation
-        double speedModifier = findSpeedModifier();
-
-        ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
-
-        Pose2d translatedGoalPose = new Pose2d(
-                goalPose.getX() + speedModifier * fieldSpeeds.vxMetersPerSecond * tof,
-                goalPose.getY() + speedModifier * fieldSpeeds.vyMetersPerSecond * tof, new Rotation2d());
-
-        Distance compensatedDist = Meter
-                .of(getTurretpose().getTranslation().getDistance(translatedGoalPose.getTranslation()));
-
-        if (interationCount <= 0) {
-            return compensatedDist;
-        } else {
-            return getDist(interationCount - 1, compensatedDist);
-        }
+    public Distance getDist() {
+        return Feet.of(cachedDistFeet);
     }
 
-    public Pose2d getGoal(double interationCount) {
-        updateGoalPose();
-
-        Distance rawDist = getRawDistFromTurret();
-        double tof = u_Lut.getTofFrom(rawDist.in(Feet));
-
-        // Speed compensation
-        double speedModifier = findSpeedModifier();
-
-        ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
-
-        Pose2d translatedGoalPose = new Pose2d(
-                goalPose.getX() + speedModifier * fieldSpeeds.vxMetersPerSecond * tof,
-                goalPose.getY() + speedModifier * fieldSpeeds.vyMetersPerSecond * tof, new Rotation2d());
-
-        if (interationCount <= 0) {
-            return translatedGoalPose;
-        } else {
-            Distance compensatedDist = Meter
-                    .of(getTurretpose().getTranslation().getDistance(translatedGoalPose.getTranslation()));
-
-            return getGoal(interationCount - 1, compensatedDist);
-        }
-    }
-
-    private Pose2d getGoal(double interationCount, Distance prevDist) {
-        updateGoalPose();
-
-        double tof = u_Lut.getTofFrom(prevDist.in(Feet));
-
-        // Speed compensation
-        double speedModifier = findSpeedModifier();
-
-        ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
-
-        Pose2d translatedGoalPose = new Pose2d(
-                goalPose.getX() + speedModifier * fieldSpeeds.vxMetersPerSecond * tof,
-                goalPose.getY() + speedModifier * fieldSpeeds.vyMetersPerSecond * tof, new Rotation2d());
-
-        if (interationCount <= 0) {
-            virtualGoalPoseSender.set(translatedGoalPose);
-            return translatedGoalPose;
-        } else {
-            Distance compensatedDist = Meter
-                    .of(getTurretpose().getTranslation().getDistance(translatedGoalPose.getTranslation()));
-
-            return getGoal(interationCount - 1, compensatedDist);
-        }
+    public Pose2d getGoal() {
+        return cachedGoalPose;
     }
 
     public void bindAllianceTriggers() {

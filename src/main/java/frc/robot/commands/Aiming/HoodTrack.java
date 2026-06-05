@@ -33,7 +33,7 @@ public class HoodTrack extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    hood.setDegrees(u_Lut.getAngleFrom(u_Dist.getDist(4).in(Feet)));
+    hood.setDegrees(u_Lut.getAngleFrom(u_Dist.getDist().in(Feet)));
   }
 
   // Called once the command ends or is interrupted.

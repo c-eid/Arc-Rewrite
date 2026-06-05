@@ -34,7 +34,7 @@ public class Shoot extends Command {
   public void execute() {
     s_Shooter.setRPM( ()->
         u_Lut.getRpmFrom(
-            u_Dist.getDist(4).in(Feet)));
+            u_Dist.getDist().in(Feet)));
   }
 
   // Called once the command ends or is interrupted.
