@@ -27,13 +27,11 @@ import frc.robot.commands.Emergency.Zeroing;
 import frc.robot.commands.Intake.Bounce;
 import frc.robot.commands.Intake.HomeIntake;
 import frc.robot.commands.Intake.Intaking;
-import frc.robot.commands.Intake.OpenIntake;
 import frc.robot.commands.Intake.StoreIntake;
 import frc.robot.commands.Launch.Shoot;
 import frc.robot.commands.Serialization.Belt;
 import frc.robot.commands.Serialization.Serialize;
 import frc.robot.commands.Serialization.SerializeUnjam;
-import frc.robot.commands.Serialization.StopSerializer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.s_Hood;
 import frc.robot.subsystems.s_Belt;
@@ -115,10 +113,13 @@ public class RobotContainer {
 
   private void configureModifierBindings() {
     driver.rightTrigger(0.3).onTrue( Commands.runOnce(()-> s_Swerve.setSpeedModifier(0.2)));
-
     driver.rightTrigger(0.3).onFalse( Commands.runOnce(()-> s_Swerve.setSpeedModifier(1)));
 
+    driver.leftTrigger(0.3).onTrue(Commands.runOnce(()-> s_Swerve.setSpeedModifier(0.55)));
+    driver.leftTrigger(0.3).onFalse(Commands.runOnce(()-> s_Swerve.setSpeedModifier(0.55)));
+
   }
+  
 
   private void configureCommandBindings() {
 
@@ -128,8 +129,8 @@ public class RobotContainer {
     driver.leftBumper().whileTrue(
         reverseAll);
 
-    driver.rightTrigger(0.3).debounce(0.3, DebounceType.kBoth).whileTrue(
-        bounce)
+    driver.rightTrigger(0.3).debounce(0.3, DebounceType.kBoth)
+        // .whileTrue(bounce)
         // .and(() -> s_Shooter.atSetpoint())
         .whileTrue(serializeUnjam);
         // .whileTrue(
@@ -176,19 +177,19 @@ public class RobotContainer {
 
   }
   private void bindNamedCommands(){
-      NamedCommands.registerCommand("intake",new Intaking(s_Intake));
+        NamedCommands.registerCommand("intake", Commands.runOnce(() -> s_Intake.setDefaultCommand(intake)));
 
-        NamedCommands.registerCommand("sintake",new OpenIntake(s_Intake));
+        NamedCommands.registerCommand("sintake", Commands.runOnce(() -> s_Intake.removeDefaultCommand()));
 
-        NamedCommands.registerCommand("revshoot", new Shoot(s_Shooter, u_Dist));
-        NamedCommands.registerCommand("intakeup", new StoreIntake(s_Intake));
+        NamedCommands.registerCommand("revshoot", Commands.runOnce(() -> s_Shooter.setDefaultCommand(revShooter)));
+        NamedCommands.registerCommand("intakeup", Commands.runOnce(() -> s_Intake.setDefaultCommand(intakeUp)));
 
-        NamedCommands.registerCommand("spindex",  new SerializeUnjam(s_Belt, s_Serializer));
+        NamedCommands.registerCommand("spindex",  Commands.runOnce(()-> s_Serializer.setDefaultCommand(serializeUnjam)));
 
-        NamedCommands.registerCommand("stopspindexer", new StopSerializer(s_Belt, s_Serializer));
-        NamedCommands.registerCommand("outtakeshooter", new Reverse(s_Shooter, s_Belt, s_Serializer, s_Intake));
+        NamedCommands.registerCommand("stopspindexer", Commands.runOnce(()-> s_Serializer.removeDefaultCommand()));
+        NamedCommands.registerCommand("outtakeshooter", Commands.runOnce(() -> s_Shooter.setDefaultCommand(reverseAll)));
 
-        NamedCommands.registerCommand("stopshoot",Commands.runOnce(() -> s_Shooter.setRPM(0), s_Shooter));
+        NamedCommands.registerCommand("stopshoot",Commands.runOnce(() -> s_Shooter.removeDefaultCommand()));
         NamedCommands.registerCommand("Zero", Commands.runOnce(() -> s_Swerve.getDrivetrain().seedFieldCentric()));
         
         NamedCommands.registerCommand("shoot",Commands.none());

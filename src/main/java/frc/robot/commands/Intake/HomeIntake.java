@@ -5,8 +5,11 @@
 package frc.robot.commands.Intake;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RPM;
 
 import java.util.function.Supplier;
+
+import org.ejml.sparse.csc.linsol.qr.LinearSolverQrLeftLooking_DSCC;
 
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -14,6 +17,7 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.s_Intake;
+import frc.robot.util.MotorJamDetector;
 
 public class HomeIntake extends Command {
   s_Intake intake;
@@ -22,12 +26,20 @@ public class HomeIntake extends Command {
   Supplier<TalonFX> right;
   Supplier<TalonFX> left;
 
+  MotorJamDetector leftJamDetector;
+  MotorJamDetector rightJamDetector;
+
+
   public HomeIntake(s_Intake intake) {
       this.intake = intake;
       addRequirements(intake);
 
       right = () -> intake.getRightPivotTalonFx();
       left = () -> intake.getLeftPivotTalonFX();
+
+      leftJamDetector = new MotorJamDetector(20, 50, 0.15);
+      rightJamDetector = new MotorJamDetector(20, 50, 0.15);
+
 
     }
 
@@ -45,12 +57,12 @@ public class HomeIntake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
-    if(right.get().getStatorCurrent().getValue().gte(Amps.of(20))){
+    
+    if(rightJamDetector.update(right.get().getStatorCurrent().getValueAsDouble(), right.get().getVelocity().getValue().in(RPM))){
       rightHomed = true;
     }
 
-    if(left.get().getStatorCurrent().getValue().gte(Amps.of(20))){
+    if(leftJamDetector.update(left.get().getStatorCurrent().getValueAsDouble(), left.get().getVelocity().getValue().in(RPM))){
       leftHomed = true;
     }
 
@@ -65,7 +77,7 @@ public class HomeIntake extends Command {
     intake.setSpeed(0);
     intake.overrideDeg(3);
 
-    left.get().setControl(new Follower(31, MotorAlignmentValue.Aligned));
+    left.get().setControl(new Follower(31, MotorAlignmentValue.Opposed));
 
     intake.setDegrees(0);
   }

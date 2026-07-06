@@ -18,6 +18,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
@@ -100,7 +101,10 @@ public class s_Intake extends SubsystemBase {
     // pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
     // Rotations.convertFrom(0, Degrees);
 
-    lPivotTalonFX.setControl(new Follower(31, MotorAlignmentValue.Aligned));
+    pivotConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+    lPivotTalonFX.setControl(new Follower(31, MotorAlignmentValue.Opposed));
+
 
     PhysicsSim.getInstance().addTalonFX(rPivotTalonFX, moi, ratio, 2);
 
@@ -154,7 +158,7 @@ public class s_Intake extends SubsystemBase {
   }
 
   public void setLeftVoltage(double volts) {
-    lPivotTalonFX.setControl(m_VoltageOut.withOutput(volts));
+    lPivotTalonFX.setControl(m_VoltageOut.withOutput(-volts));
   }
 
   public void setRightVoltage(double volts) {
