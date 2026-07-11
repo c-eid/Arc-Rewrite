@@ -9,7 +9,9 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -41,7 +43,10 @@ import frc.robot.subsystems.s_Turret;
 import frc.robot.subsystems.s_Shooter;
 import frc.robot.subsystems.drive.s_Drivetrain;
 import frc.robot.subsystems.poseEstimation.s_QuestNav;
+import frc.robot.util.Touchboard;
 import frc.robot.util.u_Dist;
+
+import java.io.File;
 
 public class RobotContainer {
 
@@ -54,7 +59,7 @@ public class RobotContainer {
 
   // Subsystems
   s_Drivetrain s_Swerve = new s_Drivetrain();
-  s_QuestNav s_QNav = new s_QuestNav(s_Swerve.getDrivetrain(), driver);
+  public s_QuestNav s_QNav = new s_QuestNav(s_Swerve.getDrivetrain(), driver);
   s_Intake s_Intake = new s_Intake();
   s_Belt s_Belt = new s_Belt();
   s_Turret s_Turret = new s_Turret(turretSimulation);
@@ -79,7 +84,7 @@ public class RobotContainer {
   Belt belt = new Belt(s_Belt);
   Serialize serialize = new Serialize(s_Serializer);
   SerializeUnjam serializeUnjam = new SerializeUnjam(s_Belt, s_Serializer);
-  
+
   Zero zeroAll = new Zero(s_Turret, s_Hood, s_Intake);
   TouchboardShootAngle touchboardShootAngle = new TouchboardShootAngle(s_Shooter, s_Hood);
 
@@ -87,12 +92,14 @@ public class RobotContainer {
 
   Reverse reverseAll = new Reverse(s_Shooter, s_Belt, s_Serializer, s_Intake);
 
-  Zeroing zeroTurret = new Zeroing(s_Turret, ()-> driver.getRightX());
+  Zeroing zeroTurret = new Zeroing(s_Turret, () -> driver.getRightX());
 
   Lock lockTurret = new Lock(s_Turret, s_Hood);
   TrenchShot trenchShot = new TrenchShot(s_Shooter);
 
- public Command currentAuto;
+  String defaultAuto = "2 swipe right side mid";
+
+  public Command currentAuto;
 
   public RobotContainer() {
     s_Swerve.bindControllers(s_QNav, driver);
@@ -102,7 +109,18 @@ public class RobotContainer {
     configureCommandBindings();
     bindNamedCommands();
 
-    currentAuto = new PathPlannerAuto("2 swipe right side mid");
+    try {
+      currentAuto = loadAuto(Touchboard.getStringValue("AutoSetter"));
+      SmartDashboard.putString("CurrentAuto", Touchboard.getStringValue("AutoSetter"));
+    } catch (Exception e) {
+      try {
+        currentAuto = loadAuto(defaultAuto);
+        SmartDashboard.putString("CurrentAuto", defaultAuto);
+      } catch (Exception e2) {
+        currentAuto = Commands.none();
+        SmartDashboard.putString("CurrentAuto", "ERR Default Not Found!");
+      }
+    }
 
   }
 
@@ -112,14 +130,13 @@ public class RobotContainer {
   }
 
   private void configureModifierBindings() {
-    driver.rightTrigger(0.3).onTrue( Commands.runOnce(()-> s_Swerve.setSpeedModifier(0.2)));
-    driver.rightTrigger(0.3).onFalse( Commands.runOnce(()-> s_Swerve.setSpeedModifier(1)));
+    driver.rightTrigger(0.3).onTrue(Commands.runOnce(() -> s_Swerve.setSpeedModifier(0.2)));
+    driver.rightTrigger(0.3).onFalse(Commands.runOnce(() -> s_Swerve.setSpeedModifier(1)));
 
-    driver.leftTrigger(0.3).onTrue(Commands.runOnce(()-> s_Swerve.setSpeedModifier(0.55)));
-    driver.leftTrigger(0.3).onFalse(Commands.runOnce(()-> s_Swerve.setSpeedModifier(0.55)));
+    driver.leftTrigger(0.3).onTrue(Commands.runOnce(() -> s_Swerve.setSpeedModifier(0.55)));
+    driver.leftTrigger(0.3).onFalse(Commands.runOnce(() -> s_Swerve.setSpeedModifier(0.55)));
 
   }
-  
 
   private void configureCommandBindings() {
 
@@ -133,30 +150,32 @@ public class RobotContainer {
         // .whileTrue(bounce)
         // .and(() -> s_Shooter.atSetpoint())
         .whileTrue(serializeUnjam);
-        // .whileTrue(
-        // belt).whileTrue(
-        // serialize);
+    // .whileTrue(
+    // belt).whileTrue(
+    // serialize);
 
     driver.leftStick().and(driver.x()).toggleOnTrue(zeroTurret);
     driver.leftStick().and(driver.y()).toggleOnTrue(lockTurret)
-         .toggleOnTrue(Commands.run(()-> {}).beforeStarting(()-> s_Shooter.setTrenchShot(true)).finallyDo(()-> s_Shooter.setTrenchShot(false)));
-    
-    // driver.rightTrigger(0.3).whileTrue(5
-    //     belt);
-        
-    // driver.rightTrigger(0.3).whileTrue(
-    //     Commands.waitSeconds(1).andThen(serialize) );
+        .toggleOnTrue(Commands.run(() -> {
+        }).beforeStarting(() -> s_Shooter.setTrenchShot(true)).finallyDo(() -> s_Shooter.setTrenchShot(false)));
 
-    driver.rightTrigger(0.3).and(new Trigger(()-> !s_Shooter.getTrenchShot())).whileTrue(
+    // driver.rightTrigger(0.3).whileTrue(5
+    // belt);
+
+    // driver.rightTrigger(0.3).whileTrue(
+    // Commands.waitSeconds(1).andThen(serialize) );
+
+    driver.rightTrigger(0.3).and(new Trigger(() -> !s_Shooter.getTrenchShot())).whileTrue(
         revShooter);
 
-    driver.rightTrigger(0.3).and(new Trigger(()-> s_Shooter.getTrenchShot())).whileTrue(
+    driver.rightTrigger(0.3).and(new Trigger(() -> s_Shooter.getTrenchShot())).whileTrue(
         trenchShot);
 
     driver.rightBumper().whileTrue(
         revShooter).whileTrue(
-        belt).whileTrue(
-        serialize);
+            belt)
+        .whileTrue(
+            serialize);
 
     driver.pov(0).onTrue(
         intakeUp);
@@ -172,37 +191,66 @@ public class RobotContainer {
 
     driver.y().whileTrue(
         belt).whileTrue(
-        serialize);
+            serialize);
     // driver.rightBumper().whileTrue()
 
+    Touchboard.bindOptGroup("AutoSetter", () -> Commands.runOnce(() -> {
+      try {
+        currentAuto = loadAuto(Touchboard.getStringValue("AutoSetter"));
+        SmartDashboard.putString("CurrentAuto", Touchboard.getStringValue("AutoSetter"));
+
+      } catch (Exception e) {
+        try {
+          currentAuto = loadAuto(defaultAuto);
+          SmartDashboard.putString("CurrentAuto", "ERR Running -> " + defaultAuto);
+
+        } catch (Exception e2) {
+          currentAuto = Commands.none();
+          SmartDashboard.putString("CurrentAuto", "ERR Default Not Found!");
+        }
+      }
+    }).ignoringDisable(true));
+
   }
-  private void bindNamedCommands(){
-        NamedCommands.registerCommand("intake", Commands.runOnce(() -> s_Intake.setDefaultCommand(intake)));
 
-        NamedCommands.registerCommand("sintake", Commands.runOnce(() -> s_Intake.removeDefaultCommand()));
+  private void bindNamedCommands() {
+    NamedCommands.registerCommand("intake", Commands.runOnce(() -> s_Intake.setDefaultCommand(intake)));
 
-        NamedCommands.registerCommand("revshoot", Commands.runOnce(() -> s_Shooter.setDefaultCommand(revShooter)));
-        NamedCommands.registerCommand("intakeup", Commands.runOnce(() -> s_Intake.setDefaultCommand(intakeUp)));
+    NamedCommands.registerCommand("sintake", Commands.runOnce(() -> s_Intake.removeDefaultCommand()));
 
-        NamedCommands.registerCommand("spindex",  Commands.runOnce(()-> s_Serializer.setDefaultCommand(serializeUnjam)));
+    NamedCommands.registerCommand("revshoot", Commands.runOnce(() -> s_Shooter.setDefaultCommand(revShooter)));
+    NamedCommands.registerCommand("intakeup", Commands.runOnce(() -> s_Intake.setDefaultCommand(intakeUp)));
 
-        NamedCommands.registerCommand("stopspindexer", Commands.runOnce(()-> s_Serializer.removeDefaultCommand()));
-        NamedCommands.registerCommand("outtakeshooter", Commands.runOnce(() -> s_Shooter.setDefaultCommand(reverseAll)));
+    NamedCommands.registerCommand("spindex", Commands.runOnce(() -> s_Serializer.setDefaultCommand(serializeUnjam)));
 
-        NamedCommands.registerCommand("stopshoot",Commands.runOnce(() -> s_Shooter.removeDefaultCommand()));
-        NamedCommands.registerCommand("Zero", Commands.runOnce(() -> s_Swerve.getDrivetrain().seedFieldCentric()));
-        
-        NamedCommands.registerCommand("shoot",Commands.none());
-        NamedCommands.registerCommand("outtakespindexer",Commands.none());        
-        NamedCommands.registerCommand("track turret", Commands.none());
-        NamedCommands.registerCommand("track left", Commands.none());
-        NamedCommands.registerCommand("zerohood", Commands.none());
-        NamedCommands.registerCommand("track right", Commands.none());
-        NamedCommands.registerCommand("sethood", Commands.none());
+    NamedCommands.registerCommand("stopspindexer", Commands.runOnce(() -> s_Serializer.removeDefaultCommand()));
+    NamedCommands.registerCommand("outtakeshooter", Commands.runOnce(() -> s_Shooter.setDefaultCommand(reverseAll)));
+
+    NamedCommands.registerCommand("stopshoot", Commands.runOnce(() -> s_Shooter.removeDefaultCommand()));
+    NamedCommands.registerCommand("Zero", Commands.runOnce(() -> s_Swerve.getDrivetrain().seedFieldCentric()));
+
+    NamedCommands.registerCommand("shoot", Commands.none());
+    NamedCommands.registerCommand("outtakespindexer", Commands.none());
+    NamedCommands.registerCommand("track turret", Commands.none());
+    NamedCommands.registerCommand("track left", Commands.none());
+    NamedCommands.registerCommand("zerohood", Commands.none());
+    NamedCommands.registerCommand("track right", Commands.none());
+    NamedCommands.registerCommand("sethood", Commands.none());
 
   }
 
   PathConstraints constraints = new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+
+  private Command loadAuto(String autoName) {
+    File deployDir = Filesystem.getDeployDirectory();
+    File autoFile = new File(deployDir, "pathplanner/autos/" + autoName + ".auto");
+
+    if (!autoFile.exists()) {
+      throw new IllegalArgumentException("Auto '" + autoName + "' does not exist at " + autoFile.getPath());
+    }
+
+    return new PathPlannerAuto(autoName);
+  }
 
   public Command getAutonomousCommand() {
     return currentAuto;

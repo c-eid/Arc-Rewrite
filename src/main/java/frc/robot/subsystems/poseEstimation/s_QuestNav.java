@@ -22,6 +22,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -42,6 +43,7 @@ public class s_QuestNav extends SubsystemBase {
 
   QuestNav questNav = new QuestNav();
   CommandSwerveDrivetrain s_Swerve;
+  String startPoseSet = "NOT SET";
 
   private final NetworkTableInstance networkTable = NetworkTableInstance.getDefault();
 
@@ -66,8 +68,17 @@ public class s_QuestNav extends SubsystemBase {
     this.s_Swerve = s_Swerve;
     this.driver = driver;
 
-    Touchboard.bindOptGroup("initalPose",
-        () -> Commands.runOnce(() -> setPoseFromString(() -> initalPose.get())).ignoringDisable(true));
+    SmartDashboard.putString("StartPoseSet", startPoseSet);
+
+    // Touchboard.bindOptGroup("initalPose",
+    //     () -> Commands.runOnce(() -> setPoseFromString(() -> initalPose.get())).ignoringDisable(true));
+    Touchboard.bindOneShotButton("SetStartPoseLeft", Commands.runOnce(()->{
+      setPoseFromString(()->"left");
+    }).ignoringDisable(true));
+
+    Touchboard.bindOneShotButton("SetStartPoseRight", Commands.runOnce(()->{
+      setPoseFromString(()->"right");
+    }).ignoringDisable(true));
 
     questNav.onTrackingAcquired(() -> {
       if (initialized == false) {
@@ -99,13 +110,17 @@ public class s_QuestNav extends SubsystemBase {
         response -> DriverStation.reportError("Pose reset failed: " + response.getErrorMessage(), false));
   }
 
+  public String getStartPoseStatus(){
+    return startPoseSet;
+  }
+
   private static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   // private boolean shouldReject(Pose3d pose) {
-  //   return pose.getX() < 0.0
-  //       || pose.getX() > FIELD_LAYOUT.getFieldLength()
-  //       || pose.getY() < 0.0
-  //       || pose.getY() > FIELD_LAYOUT.getFieldWidth();
+  // return pose.getX() < 0.0
+  // || pose.getX() > FIELD_LAYOUT.getFieldLength()
+  // || pose.getY() < 0.0
+  // || pose.getY() > FIELD_LAYOUT.getFieldWidth();
   // }
 
   private boolean shouldReject(Pose2d pose) {
@@ -131,7 +146,6 @@ public class s_QuestNav extends SubsystemBase {
     questNav.getTrackingLostCounter().ifPresent(
         c -> SmartDashboard.putNumber("QuestNav/TrackingLostCount", c));
 
-
     if (!trustQuest && questNav.isTracking()) {
       LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-rsl");
       doRejectUpdate = false;
@@ -139,7 +153,7 @@ public class s_QuestNav extends SubsystemBase {
       if (mt2.tagCount == 0) {
         doRejectUpdate = true;
       }
-      if(shouldReject(mt2.pose)){
+      if (shouldReject(mt2.pose)) {
         doRejectUpdate = true;
       }
       if (!doRejectUpdate) {
@@ -154,15 +168,13 @@ public class s_QuestNav extends SubsystemBase {
 
     if (!questNav.isTracking()) {
       LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-rsl");
-      
-
 
       doRejectUpdate = false;
 
       if (mt2.tagCount == 0) {
         doRejectUpdate = true;
       }
-      if(shouldReject(mt2.pose)){
+      if (shouldReject(mt2.pose)) {
         doRejectUpdate = true;
       }
       if (!doRejectUpdate) {
@@ -186,8 +198,8 @@ public class s_QuestNav extends SubsystemBase {
         Pose3d questPose = questFrame.questPose3d();
 
         // if (shouldReject(questPose)) {
-        //   trustQuest = false;
-        //   return;
+        // trustQuest = false;
+        // return;
         // }
         // Get timestamp for when the data was sent
         double timestamp = questFrame.dataTimestamp();
@@ -209,35 +221,71 @@ public class s_QuestNav extends SubsystemBase {
   Pose2d RedLeft = FlippingUtil.flipFieldPose(BlueLeft);
   Pose2d RedRight = FlippingUtil.flipFieldPose(BlueRight);
 
-  public void setPoseFromString(Supplier<String> whereSupplier) {
+  public void setPoseFromString(Supplier<String> whereSupplier) { 
     System.out.println(whereSupplier.get());
 
-    if(questNav.isTracking()){
+    if (questNav.isTracking()) {
       trustQuest = true;
     }
 
     String where = whereSupplier.get();
-    if (where.equals("BlueLeft")) {
-      setPose(new Pose3d(BlueLeft));
-      s_Swerve.resetPose(BlueLeft);
 
-    } else if (where.equals("BlueRight")) {
-      setPose(new Pose3d(BlueRight));
-      s_Swerve.resetPose(BlueRight);
-
-    } else if (where.equals("RedLeft")) {
-      setPose(new Pose3d(RedLeft));
-      s_Swerve.resetPose(RedLeft);
-
-    } else if (where.equals("RedRight")) {
-      setPose(new Pose3d(RedRight));
-      s_Swerve.resetPose(RedRight);
-
+    if (where.equals("left")) {
+      if (DriverStation.getAlliance().isPresent()) {
+        if (DriverStation.getAlliance().get() == Alliance.Blue) {
+          startPoseSet = "BlueLeft";
+          setPose(new Pose3d(BlueLeft));
+          s_Swerve.resetPose(BlueLeft);
+        } else if (DriverStation.getAlliance().get() == Alliance.Red) {
+          startPoseSet = "RedLeft";
+          setPose(new Pose3d(RedLeft));
+          s_Swerve.resetPose(RedLeft);
+        }
+      }
+    } else if (where.equals("right")) {
+      if (DriverStation.getAlliance().isPresent()) {
+        if (DriverStation.getAlliance().get() == Alliance.Blue) {
+          startPoseSet = "BlueRight";
+          setPose(new Pose3d(BlueRight));
+          s_Swerve.resetPose(BlueRight);
+        } else if (DriverStation.getAlliance().get() == Alliance.Red) {
+          startPoseSet = "RedRight";
+          setPose(new Pose3d(RedRight));
+          s_Swerve.resetPose(RedRight);
+        }
+      }
     }
+
+    if(startPoseSet.equals("NOT SET")){
+      SmartDashboard.putString("StartPoseSet", "No Alliance! Failed");
+      return;
+    } 
+    SmartDashboard.putString("StartPoseSet", startPoseSet);
+
+    // if (where.equals("BlueLeft")) {
+    // setPose(new Pose3d(BlueLeft));
+    // s_Swerve.resetPose(BlueLeft);
+
+    // } else if (where.equals("BlueRight")) {
+    // setPose(new Pose3d(BlueRight));
+    // s_Swerve.resetPose(BlueRight);
+
+    // } else if (where.equals("RedLeft")) {
+    // setPose(new Pose3d(RedLeft));
+    // s_Swerve.resetPose(RedLeft);
+
+    // } else if (where.equals("RedRight")) {
+    // setPose(new Pose3d(RedRight));
+    // s_Swerve.resetPose(RedRight);
+
+    // }
   }
 
   public void setPose(Pose3d position) {
     questNav.setPose(position.transformBy(Constants.QuestNavConstants.ROBOT_TO_QUEST));
   }
 
+  public boolean getConnected() {
+    return questNav.isConnected();
+  }
 }
