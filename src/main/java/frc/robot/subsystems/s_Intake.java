@@ -69,7 +69,7 @@ public class s_Intake extends SubsystemBase {
   public s_Intake() {
     initialized = true;
 
-    SparkBaseConfig config = new SparkFlexConfig().openLoopRampRate(0.4).smartCurrentLimit(40);
+    SparkBaseConfig config = new SparkFlexConfig().openLoopRampRate(0.1).smartCurrentLimit(80);
 
     intakeRollerBlack.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     intakeRollerBlue.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);

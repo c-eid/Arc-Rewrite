@@ -35,12 +35,17 @@ public class u_Lut {
 
         rpmMap.put(9.060, 2200.0);
         angleMap.put(9.060, 26.0); 
-        tofMap.put(7.034, 1.09);
+        tofMap.put(9.060, 1.09);
+
+
+        rpmMap.put(10.590, 2250.0);
+        angleMap.put(10.590, 26.0); 
+        tofMap.put(10.590, 1.08);
 
 
         rpmMap.put(11.335, 2300.0);
         angleMap.put(11.335, 27.0);
-        tofMap.put(7.034, 1.07);
+        tofMap.put(11.335, 1.07);
 
 
         rpmMap.put(13.607, 2475.0);
@@ -49,7 +54,24 @@ public class u_Lut {
 
         rpmMap.put(16.009, 2560.0);
         angleMap.put(16.009, 31.0);
-        tofMap.put(13.607, 1.16);
+        tofMap.put(16.009, 1.16);
+
+        rpmMap.put(18.470, 2600.0);
+        angleMap.put(18.470, 34.0);
+        tofMap.put(18.470, 1.11);
+
+        rpmMap.put(21.053, 2750.0);
+        angleMap.put(21.053, 34.0);
+        tofMap.put(21.053, 1.45);
+
+        rpmMap.put(23.062, 2890.0);
+        angleMap.put(23.062, 35.0);
+        tofMap.put(23.062, 1.35);
+
+        rpmMap.put(25.400, 3030.0);
+        angleMap.put(25.400, 36.0);
+        tofMap.put(25.400, 1.52);
+
 
         initialized = true;
     }

@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -32,6 +33,7 @@ import frc.robot.commands.Intake.Intaking;
 import frc.robot.commands.Intake.StoreIntake;
 import frc.robot.commands.Launch.Shoot;
 import frc.robot.commands.Serialization.Belt;
+import frc.robot.commands.Serialization.PassiveClear;
 import frc.robot.commands.Serialization.Serialize;
 import frc.robot.commands.Serialization.SerializeUnjam;
 import frc.robot.generated.TunerConstants;
@@ -70,7 +72,7 @@ public class RobotContainer {
   Bounce bounce = new Bounce(s_Intake);
 
   // Util
-  u_Dist u_Dist = new u_Dist(s_Swerve);
+  u_Dist u_Dist = new u_Dist(s_Swerve, driver);
 
   // Commands
   Intaking intake = new Intaking(s_Intake);
@@ -97,12 +99,16 @@ public class RobotContainer {
   Lock lockTurret = new Lock(s_Turret, s_Hood);
   TrenchShot trenchShot = new TrenchShot(s_Shooter);
 
-  String defaultAuto = "2 swipe right side mid";
+  PassiveClear serializeClear = new PassiveClear(s_Serializer);
+
+  String defaultAuto = "northshore";
 
   public Command currentAuto;
 
   public RobotContainer() {
     s_Swerve.bindControllers(s_QNav, driver);
+
+    SmartDashboard.putData(CommandScheduler.getInstance());
 
     configureDefaults();
     configureModifierBindings();
@@ -111,15 +117,20 @@ public class RobotContainer {
 
     try {
       currentAuto = loadAuto(Touchboard.getStringValue("AutoSetter"));
+      
       SmartDashboard.putString("CurrentAuto", Touchboard.getStringValue("AutoSetter"));
     } catch (Exception e) {
+        System.out.println(e.getMessage());
+
       try {
         currentAuto = loadAuto(defaultAuto);
         SmartDashboard.putString("CurrentAuto", defaultAuto);
       } catch (Exception e2) {
         currentAuto = Commands.none();
+        System.out.println(e2.getMessage());
         SmartDashboard.putString("CurrentAuto", "ERR Default Not Found!");
       }
+
     }
 
   }
@@ -171,6 +182,10 @@ public class RobotContainer {
     driver.rightTrigger(0.3).and(new Trigger(() -> s_Shooter.getTrenchShot())).whileTrue(
         trenchShot);
 
+    // driver.rightTrigger(0.2).debounce(0.1).onFalse(Commands.run(()->{
+    //   s_Belt.setIndexRpm(-3000);
+    // }).finallyDo(()->{s_Belt.setIndexRpm(0);}).withTimeout(0.2));
+
     driver.rightBumper().whileTrue(
         revShooter).whileTrue(
             belt)
@@ -200,33 +215,36 @@ public class RobotContainer {
         SmartDashboard.putString("CurrentAuto", Touchboard.getStringValue("AutoSetter"));
 
       } catch (Exception e) {
+        System.out.println(e.getMessage());
+
         try {
           currentAuto = loadAuto(defaultAuto);
           SmartDashboard.putString("CurrentAuto", "ERR Running -> " + defaultAuto);
 
         } catch (Exception e2) {
+          System.out.println(e2.getMessage());
           currentAuto = Commands.none();
           SmartDashboard.putString("CurrentAuto", "ERR Default Not Found!");
         }
+
       }
     }).ignoringDisable(true));
 
   }
 
   private void bindNamedCommands() {
-    NamedCommands.registerCommand("intake", Commands.runOnce(() -> s_Intake.setDefaultCommand(intake)));
+    NamedCommands.registerCommand("intake", new Intaking(s_Intake) );
+    NamedCommands.registerCommand("sintake", Commands.runOnce(()->{}, s_Intake));
 
-    NamedCommands.registerCommand("sintake", Commands.runOnce(() -> s_Intake.removeDefaultCommand()));
+    NamedCommands.registerCommand("revshoot", new Shoot(s_Shooter, u_Dist));
+    NamedCommands.registerCommand("intakeup", new StoreIntake(s_Intake));
 
-    NamedCommands.registerCommand("revshoot", Commands.runOnce(() -> s_Shooter.setDefaultCommand(revShooter)));
-    NamedCommands.registerCommand("intakeup", Commands.runOnce(() -> s_Intake.setDefaultCommand(intakeUp)));
+    NamedCommands.registerCommand("spindex",new SerializeUnjam(s_Belt, s_Serializer));
 
-    NamedCommands.registerCommand("spindex", Commands.runOnce(() -> s_Serializer.setDefaultCommand(serializeUnjam)));
+    NamedCommands.registerCommand("stopspindexer", Commands.runOnce(() -> {}, s_Serializer));
+    NamedCommands.registerCommand("outtakeshooter", new Reverse(s_Shooter, s_Belt, s_Serializer, s_Intake));
 
-    NamedCommands.registerCommand("stopspindexer", Commands.runOnce(() -> s_Serializer.removeDefaultCommand()));
-    NamedCommands.registerCommand("outtakeshooter", Commands.runOnce(() -> s_Shooter.setDefaultCommand(reverseAll)));
-
-    NamedCommands.registerCommand("stopshoot", Commands.runOnce(() -> s_Shooter.removeDefaultCommand()));
+    NamedCommands.registerCommand("stopshoot", Commands.runOnce(() -> {}, s_Shooter));
     NamedCommands.registerCommand("Zero", Commands.runOnce(() -> s_Swerve.getDrivetrain().seedFieldCentric()));
 
     NamedCommands.registerCommand("shoot", Commands.none());
@@ -244,6 +262,8 @@ public class RobotContainer {
   private Command loadAuto(String autoName) {
     File deployDir = Filesystem.getDeployDirectory();
     File autoFile = new File(deployDir, "pathplanner/autos/" + autoName + ".auto");
+    System.out.println("pathplanner/autos/" + autoName + ".auto");
+    System.out.println(autoFile.exists());
 
     if (!autoFile.exists()) {
       throw new IllegalArgumentException("Auto '" + autoName + "' does not exist at " + autoFile.getPath());

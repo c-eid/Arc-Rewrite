@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.2627389443651924,
-        "y": 5.878758915834522
+        "x": 3.198045649072753,
+        "y": 5.34827389443652
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.1825600712448168,
-        "y": 6.564732819649124
+        "x": 3.1178667759523773,
+        "y": 6.034247798251122
       },
       "isLocked": false,
       "linkedName": "shoot bump"
@@ -64,7 +64,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 135.00000000000003
   },
   "useDefaultConstraints": false
 }

@@ -29,7 +29,7 @@ public class Zero extends Command {
   public void initialize() {
     s_Turret.setDegrees(0);
     s_Hood.setDegrees(0);
-    s_Intake.setDegrees(115);
+    s_Intake.setDegrees(140);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

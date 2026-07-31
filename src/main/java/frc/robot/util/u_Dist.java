@@ -22,6 +22,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
@@ -69,8 +70,10 @@ public class u_Dist {
     private final Pose2d FEED_RED_RIGHT = FlippingUtil.flipFieldPose(FEED_BLUE_LEFT);
     private final double halfField = FieldConstants.FIELD_WIDTH.div(2).in(Meter);
 
-    public u_Dist(s_Drivetrain s_Drivetrain) {
+    private final CommandXboxController driver;
 
+    public u_Dist(s_Drivetrain s_Drivetrain, CommandXboxController driver) {
+        this.driver = driver;
         this.s_Drivetrain = s_Drivetrain;
 
         this.drivetrain = s_Drivetrain.getDrivetrain();
@@ -89,7 +92,8 @@ public class u_Dist {
     public void updateGoalPose() {
         // setHubAsGoal(alliance);
 
-        if (inAllianceZone(getTurretpose())) {
+        // if (inAllianceZone(getTurretpose())) {
+        if(!driver.leftStick().getAsBoolean()){
             setHubAsGoal(alliance);
         } else {
             setFeedAsGoal(getTurretpose(), alliance);

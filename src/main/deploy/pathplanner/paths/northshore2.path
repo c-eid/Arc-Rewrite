@@ -1,0 +1,68 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.674821683309556,
+        "y": 4.468445078459343
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.540047558099922,
+        "y": 4.190112068674849
+      },
+      "isLocked": false,
+      "linkedName": "mid north"
+    },
+    {
+      "anchor": {
+        "x": 7.312539229671896,
+        "y": 4.468445078459343
+      },
+      "prevControl": {
+        "x": 7.443551923058708,
+        "y": 4.2555233224748195
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "mid north turn"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 0.3,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 4.085616779974969
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 86.90594194108269
+  },
+  "useDefaultConstraints": true
+}

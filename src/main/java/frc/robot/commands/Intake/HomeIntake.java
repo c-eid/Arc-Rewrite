@@ -48,8 +48,8 @@ public class HomeIntake extends Command {
     leftHomed = false;
     rightHomed = false; 
 
-    intake.setLeftVoltage(-2);
-    intake.setRightVoltage(-2);
+    intake.setLeftVoltage(-5);
+    intake.setRightVoltage(-5);
 
     
   }
@@ -66,8 +66,8 @@ public class HomeIntake extends Command {
       leftHomed = true;
     }
 
-    System.out.println(rightHomed + " , " + leftHomed);
-    System.out.println(right.get().getStatorCurrent().getValue().in(Amps) + ", " + left.get().getStatorCurrent().getValue().in(Amps));
+    // System.out.println(rightHomed + " , " + leftHomed);
+    // System.out.println(right.get().getStatorCurrent().getValue().in(Amps) + ", " + left.get().getStatorCurrent().getValue().in(Amps));
 
   }
 

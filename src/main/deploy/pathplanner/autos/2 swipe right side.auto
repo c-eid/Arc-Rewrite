@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "op corral side"
+                  "pathName": "hp test swipe 1"
                 }
               },
               {
@@ -41,12 +41,6 @@
           "data": {
             "commands": [
               {
-                "type": "path",
-                "data": {
-                  "pathName": "op shoot on the move"
-                }
-              },
-              {
                 "type": "named",
                 "data": {
                   "name": "spindex"
@@ -56,6 +50,12 @@
                 "type": "named",
                 "data": {
                   "name": "revshoot"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 5.0
                 }
               }
             ]
@@ -81,28 +81,28 @@
           }
         },
         {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "corral test swipe 2"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "op shoot on the move"
+                  "pathName": "hp test swipe 2"
                 }
               },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
               {
                 "type": "named",
                 "data": {
@@ -113,6 +113,12 @@
                 "type": "named",
                 "data": {
                   "name": "revshoot"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "sintake"
                 }
               }
             ]

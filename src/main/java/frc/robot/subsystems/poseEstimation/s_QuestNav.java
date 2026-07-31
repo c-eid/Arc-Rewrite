@@ -89,7 +89,7 @@ public class s_QuestNav extends SubsystemBase {
 
     questNav.onDisconnected(() -> {
       DriverStation.reportError("Quest disconnected!", false);
-      driver.setRumble(RumbleType.kBothRumble, 1);
+      // driver.setRumble(RumbleType.kBothRumble, 1);
 
       CommandScheduler.getInstance()
           .schedule(new WaitCommand(.5).andThen(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 0))));
@@ -97,7 +97,7 @@ public class s_QuestNav extends SubsystemBase {
     });
     questNav.onTrackingLost(() -> {
       DriverStation.reportError("Quest tracking lost!", false);
-      driver.setRumble(RumbleType.kBothRumble, .6);
+      // driver.setRumble(RumbleType.kBothRumble, .6);
 
       CommandScheduler.getInstance()
           .schedule(new WaitCommand(.5).andThen(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 0))));
