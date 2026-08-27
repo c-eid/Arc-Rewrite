@@ -35,7 +35,7 @@ public class Robot extends TimedRobot {
     DataLogManager.start();
     SignalLogger.start();
 
-    m_robotContainer.s_Serializer.setDefaultCommand(m_robotContainer.serializeClear);
+    // m_robotContainer.s_Serializer.setDefaultCommand(m_robotContainer.serializeClear);
 
 
     led.enablePWM(3);

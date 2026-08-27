@@ -27,13 +27,12 @@ public class Bounce extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(time.get() > 1.4){
-      intake.setDegrees(90);
+    if((int) (time.get()*4) % 2 == 0){
+      intake.setDegrees(50);
+    } else{
+      intake.setDegrees(0);
     }
-    if(time.get() > 2.9){
-      intake.setDegrees(120);
 
-    }
   }
 
   // Called once the command ends or is interrupted.

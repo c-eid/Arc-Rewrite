@@ -66,7 +66,7 @@ public class s_Shooter extends SubsystemBase {
     slot0Configs.kA = 0.011587; // An acceleration of 1 rps/s requires 0.01 V output
     slot0Configs.kP = 0.049345; // A position error of 2.5 rotations results in 12 V output
 
-    talonFXConfigs.CurrentLimits.SupplyCurrentLimit = 50;
+    talonFXConfigs.CurrentLimits.SupplyCurrentLimit = 40;
     talonFXConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     talonFXConfigs.Feedback.SensorToMechanismRatio = ratio;
@@ -83,10 +83,10 @@ public class s_Shooter extends SubsystemBase {
 
     var supplyLimitConfig = new TalonFXConfiguration();
 
-    supplyLimitConfig.CurrentLimits.SupplyCurrentLimit = 50;
-    supplyLimitConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    supplyLimitConfig.CurrentLimits.SupplyCurrentLimit = 40;
+    supplyLimitConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    rightTalonFlywheel.setControl(new Follower(7, MotorAlignmentValue.Opposed));
+    rightTalonFlywheel.setControl(new Follower(7, MotorAlignmentValue.Opposed)); 
     rightTalonFlywheel.getConfigurator().apply(supplyLimitConfig);
   }
 

@@ -31,15 +31,16 @@ public class s_Serializer extends SubsystemBase {
   private SparkFlex SpindexFlexRight = new SparkFlex(41, MotorType.kBrushless); // blue wheel
   private DigitalInput beamBreakRight = new DigitalInput(8);
 
-  // private SparkClosedLoopController m_ControllerLeft = SpindexFlexLeft.getClosedLoopController();
-  // private SparkClosedLoopController m_ControllerRight = SpindexFlexRight.getClosedLoopController();
+  // private SparkClosedLoopController m_ControllerLeft =
+  // SpindexFlexLeft.getClosedLoopController();
+  // private SparkClosedLoopController m_ControllerRight =
+  // SpindexFlexRight.getClosedLoopController();
 
   private SparkFlexConfig config = new SparkFlexConfig();
   private SparkFlexConfig config2 = new SparkFlexConfig();
 
   MotorJamDetector detectorLeft;
   MotorJamDetector detectorRight;
-
 
   private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
       new SysIdRoutine.Config(
@@ -67,8 +68,12 @@ public class s_Serializer extends SubsystemBase {
     config.closedLoop.feedForward.kS(0.067918);
     config2.closedLoop.feedForward.kS(0.067918);
 
-    config.smartCurrentLimit(70);
-    config2.smartCurrentLimit(70);
+    config.smartCurrentLimit(80);
+    config2.smartCurrentLimit(80);
+
+    config.openLoopRampRate(0.3);
+    config2.openLoopRampRate(0.3);
+
 
     SpindexFlexLeft.configure(config, com.revrobotics.ResetMode.kNoResetSafeParameters,
         com.revrobotics.PersistMode.kNoPersistParameters);
@@ -76,7 +81,7 @@ public class s_Serializer extends SubsystemBase {
         com.revrobotics.PersistMode.kNoPersistParameters);
 
     this.detectorLeft = new MotorJamDetector(20, 200, 0.5);
-    this.detectorRight= new MotorJamDetector(20, 200, 0.5);
+    this.detectorRight = new MotorJamDetector(20, 200, 0.5);
 
   }
 
@@ -86,14 +91,25 @@ public class s_Serializer extends SubsystemBase {
 
   }
 
+  public void setCurrentLimit(int Amps) {
+    config.smartCurrentLimit(Amps);
+    config2.smartCurrentLimit(Amps);
+
+    SpindexFlexLeft.configure(config, com.revrobotics.ResetMode.kNoResetSafeParameters,
+        com.revrobotics.PersistMode.kNoPersistParameters);
+    SpindexFlexRight.configure(config2, com.revrobotics.ResetMode.kNoResetSafeParameters,
+        com.revrobotics.PersistMode.kNoPersistParameters);
+
+  }
+
   public void setDiffVoltage(double volts) {
     SpindexFlexLeft.setVoltage(-volts);
     SpindexFlexRight.setVoltage(volts);
 
   }
 
-  final double primaryVoltage = 6;
-  final double secondaryVoltage = 3;
+  final double primaryVoltage = 12;
+  final double secondaryVoltage = 5;
 
   final double primarySetpoint = 4000;
   final double secondarySetpoint = 500;
@@ -102,33 +118,33 @@ public class s_Serializer extends SubsystemBase {
   // public double timeout = 100;
 
   // public void setFromBeamBreaks() {
-  //   if (!beamBreakLeft.get() && !beamBreakRight.get()) {
-  //     m_ControllerLeft.setSetpoint(primarySetpoint, ControlType.kVelocity);
-  //     m_ControllerRight.setSetpoint(secondarySetpoint, ControlType.kVelocity);
+  // if (!beamBreakLeft.get() && !beamBreakRight.get()) {
+  // m_ControllerLeft.setSetpoint(primarySetpoint, ControlType.kVelocity);
+  // m_ControllerRight.setSetpoint(secondarySetpoint, ControlType.kVelocity);
 
-  //   } else if (!beamBreakLeft.get() && beamBreakRight.get()) {
+  // } else if (!beamBreakLeft.get() && beamBreakRight.get()) {
 
-  //     m_ControllerLeft.setSetpoint(-primarySetpoint, ControlType.kVelocity);
-  //     m_ControllerRight.setSetpoint(-secondarySetpoint, ControlType.kVelocity);
+  // m_ControllerLeft.setSetpoint(-primarySetpoint, ControlType.kVelocity);
+  // m_ControllerRight.setSetpoint(-secondarySetpoint, ControlType.kVelocity);
 
-  //   } else if (!beamBreakRight.get() && beamBreakLeft.get()) {
-  //     m_ControllerLeft.setSetpoint(secondarySetpoint, ControlType.kVelocity);
-  //     m_ControllerRight.setSetpoint(primarySetpoint, ControlType.kVelocity);
+  // } else if (!beamBreakRight.get() && beamBreakLeft.get()) {
+  // m_ControllerLeft.setSetpoint(secondarySetpoint, ControlType.kVelocity);
+  // m_ControllerRight.setSetpoint(primarySetpoint, ControlType.kVelocity);
 
-  //   } else {
-  //     m_ControllerLeft.setSetpoint(-primarySetpoint, ControlType.kVelocity);
-  //     m_ControllerRight.setSetpoint(primarySetpoint, ControlType.kVelocity);
-  //     // SpindexFlexLeft.setVoltage(-primaryVoltage);
-  //     // SpindexFlexRight.setVoltage(primaryVoltage);
-  //     // rounded = Math.round(Timer.getTimestamp() * 2) / 2.0;
-  //     // if ((rounded % 1) == 0) {
-  //     // SpindexFlexLeft.setVoltage(primaryVoltage);
-  //     // SpindexFlexRight.setVoltage(secondaryVoltage);
-  //     // } else {
-  //     // SpindexFlexLeft.setVoltage(-secondaryVoltage);
-  //     // SpindexFlexRight.setVoltage(-primaryVoltage);
-  //     // }
-  //   }
+  // } else {
+  // m_ControllerLeft.setSetpoint(-primarySetpoint, ControlType.kVelocity);
+  // m_ControllerRight.setSetpoint(primarySetpoint, ControlType.kVelocity);
+  // // SpindexFlexLeft.setVoltage(-primaryVoltage);
+  // // SpindexFlexRight.setVoltage(primaryVoltage);
+  // // rounded = Math.round(Timer.getTimestamp() * 2) / 2.0;
+  // // if ((rounded % 1) == 0) {
+  // // SpindexFlexLeft.setVoltage(primaryVoltage);
+  // // SpindexFlexRight.setVoltage(secondaryVoltage);
+  // // } else {
+  // // SpindexFlexLeft.setVoltage(-secondaryVoltage);
+  // // SpindexFlexRight.setVoltage(-primaryVoltage);
+  // // }
+  // }
   // }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
@@ -153,15 +169,14 @@ public class s_Serializer extends SubsystemBase {
   public void setFromBeamBreaks() {
 
     if (!beamBreakLeft.get() && !beamBreakRight.get()) {
-      
-      if(lastSide.equals("left")){
+
+      if (lastSide.equals("left")) {
         SpindexFlexLeft.setVoltage(-primaryVoltage);
         SpindexFlexRight.setVoltage(-secondaryVoltage);
-      } else{
+      } else {
         SpindexFlexLeft.setVoltage(secondaryVoltage);
         SpindexFlexRight.setVoltage(primaryVoltage);
       }
-     
 
     } else if (!beamBreakLeft.get() && beamBreakRight.get()) {
       lastSide = "left";
@@ -183,8 +198,9 @@ public class s_Serializer extends SubsystemBase {
     }
   }
 
-  public boolean isJammed(){
-    return detectorLeft.update(SpindexFlexLeft.getOutputCurrent(), SpindexFlexLeft.getEncoder().getVelocity()) || detectorRight.update(SpindexFlexRight.getOutputCurrent(), SpindexFlexRight.getEncoder().getVelocity());
+  public boolean isJammed() {
+    return false;//detectorLeft.update(SpindexFlexLeft.getOutputCurrent(), SpindexFlexLeft.getEncoder().getVelocity())
+        //|| detectorRight.update(SpindexFlexRight.getOutputCurrent(), SpindexFlexRight.getEncoder().getVelocity());
   }
 
   public void stop() {

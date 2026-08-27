@@ -12,9 +12,11 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -27,6 +29,8 @@ public class s_Belt extends SubsystemBase {
   /** Creates a new s_Shooter. */
 
   private TalonFX indexTalon = new TalonFX(50);
+  private TalonFX indexTalonRigged = new TalonFX(51);
+
   final MotionMagicVelocityVoltage m_request = new MotionMagicVelocityVoltage(0);
 
   final VoltageOut m_Voltage = new VoltageOut(0);
@@ -34,7 +38,7 @@ public class s_Belt extends SubsystemBase {
   private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
       new SysIdRoutine.Config(
           Volts.of(1).per(Second), // Ramp rate
-          Volts.of(8), // Max step voltage
+          Volts.of(12), // Max step voltage
           Seconds.of(15), // Timeout
           (state) -> SignalLogger.writeString("sysid-test-state", state.toString())),
       new SysIdRoutine.Mechanism(
@@ -58,8 +62,12 @@ public class s_Belt extends SubsystemBase {
     motionMagicConfigs.MotionMagicAcceleration = 400; // Target acceleration of 400 rps/s (0.25 seconds to max)
     motionMagicConfigs.MotionMagicJerk = 4000; // Target jerk of 4000 rps/s/s (0.1 seconds)
 
+    talonFXConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
+    talonFXConfigs.CurrentLimits.SupplyCurrentLimit = 30;
 
+    indexTalonRigged.getConfigurator().apply(talonFXConfigs);
     
+    indexTalonRigged.setControl(new Follower(50, MotorAlignmentValue.Opposed));
 
     indexTalon.getConfigurator().apply(talonFXConfigs);
   }

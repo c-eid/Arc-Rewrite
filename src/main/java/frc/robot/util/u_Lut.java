@@ -20,8 +20,12 @@ public class u_Lut {
     private static InterpolatingDoubleTreeMap angleMap = new InterpolatingDoubleTreeMap();
     private static InterpolatingDoubleTreeMap tofMap = new InterpolatingDoubleTreeMap();
 
-    private static void initialize() {
-        tofMap.put(1.0, 1.0);
+    private static void initialize(){
+        // initializeStandard();
+        initializeDemo();
+    }
+
+    private static void initializeStandard() {
 
         rpmMap.put(5.416, 1900.0);
         angleMap.put(5.416, 23.0); 
@@ -72,6 +76,16 @@ public class u_Lut {
         angleMap.put(25.400, 36.0);
         tofMap.put(25.400, 1.52);
 
+
+        initialized = true;
+    }
+
+    private static void initializeDemo(){
+
+        tofMap.put(1.0, 1.0);
+
+        rpmMap.put(5.416, 1900.0);
+        angleMap.put(5.416, 23.0); 
 
         initialized = true;
     }

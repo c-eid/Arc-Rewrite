@@ -164,6 +164,8 @@ public class RobotContainer {
     // .whileTrue(
     // belt).whileTrue(
     // serialize);
+    driver.rightTrigger(0.3).and(driver.leftTrigger().negate()).whileTrue(bounce);
+
 
     driver.leftStick().and(driver.x()).toggleOnTrue(zeroTurret);
     driver.leftStick().and(driver.y()).toggleOnTrue(lockTurret)
@@ -274,5 +276,6 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return currentAuto;
+    
   }
 }
