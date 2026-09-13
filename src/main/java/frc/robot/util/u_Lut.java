@@ -84,8 +84,23 @@ public class u_Lut {
 
         tofMap.put(1.0, 1.0);
 
-        rpmMap.put(5.416, 1900.0);
-        angleMap.put(5.416, 23.0); 
+        rpmMap.put(3.729, 1400.0);
+        angleMap.put(3.729, 30.0); 
+
+         rpmMap.put(5.4, 1600.0);
+        angleMap.put(5.4, 34.0); 
+
+        rpmMap.put(6.1, 1670.0);
+        angleMap.put(6.1, 34.0); 
+
+        rpmMap.put(8.0, 1950.0);
+        angleMap.put(8.0, 38.0); 
+
+        rpmMap.put(9.9, 2250.0);
+        angleMap.put(9.9, 38.0); 
+
+
+
 
         initialized = true;
     }

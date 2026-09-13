@@ -15,6 +15,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -25,6 +26,8 @@ import frc.robot.util.MotorJamDetector;
 
 public class s_Serializer extends SubsystemBase {
   /** Creates a new s_Spindex. */
+  Timer time;
+
   private SparkFlex SpindexFlexLeft = new SparkFlex(40, MotorType.kBrushless); // black wheel
   private DigitalInput beamBreakLeft = new DigitalInput(9);
 
@@ -57,6 +60,7 @@ public class s_Serializer extends SubsystemBase {
   // private RelativeEncoder rightEncoder = SpindexFlexRight.getEncoder();
 
   public s_Serializer() {
+    this.time = new Timer();
     config.closedLoop.p(0.0030574).i(0).d(0.0);
     config2.closedLoop.p(0.0030574).i(0).d(0.0);
     config.closedLoop.feedForward.kV(0.10517);
@@ -74,14 +78,13 @@ public class s_Serializer extends SubsystemBase {
     config.openLoopRampRate(0.3);
     config2.openLoopRampRate(0.3);
 
-
     SpindexFlexLeft.configure(config, com.revrobotics.ResetMode.kNoResetSafeParameters,
         com.revrobotics.PersistMode.kNoPersistParameters);
     SpindexFlexRight.configure(config2, com.revrobotics.ResetMode.kNoResetSafeParameters,
         com.revrobotics.PersistMode.kNoPersistParameters);
 
-    this.detectorLeft = new MotorJamDetector(20, 200, 0.5);
-    this.detectorRight = new MotorJamDetector(20, 200, 0.5);
+    this.detectorLeft = new MotorJamDetector(20, 200, 0.2);
+    this.detectorRight = new MotorJamDetector(20, 200, 0.2);
 
   }
 
@@ -109,7 +112,7 @@ public class s_Serializer extends SubsystemBase {
   }
 
   final double primaryVoltage = 12;
-  final double secondaryVoltage = 5;
+  final double secondaryVoltage = 9;
 
   final double primarySetpoint = 4000;
   final double secondarySetpoint = 500;
@@ -168,6 +171,19 @@ public class s_Serializer extends SubsystemBase {
 
   public void setFromBeamBreaks() {
 
+    if (blackJammed() && blueJammed()) {
+      SpindexFlexLeft.setVoltage(primaryVoltage);
+      SpindexFlexRight.setVoltage(-primaryVoltage);
+
+      return;
+    } else if (blackJammed()) {
+      SpindexFlexLeft.setVoltage(-primaryVoltage);
+      SpindexFlexRight.setVoltage(-secondaryVoltage);
+    } else if (blueJammed()) {
+      SpindexFlexLeft.setVoltage(primaryVoltage);
+      SpindexFlexRight.setVoltage(secondaryVoltage);
+    }
+
     if (!beamBreakLeft.get() && !beamBreakRight.get()) {
 
       if (lastSide.equals("left")) {
@@ -192,15 +208,35 @@ public class s_Serializer extends SubsystemBase {
       SpindexFlexLeft.setVoltage(-primaryVoltage);
       SpindexFlexRight.setVoltage(primaryVoltage);
 
+      System.out.println("there");
+
       // SpindexFlexLeft.setVoltage(-primaryVoltage);
       // SpindexFlexRight.setVoltage(primaryVoltage);
       // rounded = Math.round(Timer.getTimestamp() * 2) / 2.0;
+
+      // if ((int) (time.get() * 4) % 2 == 0) {
+      //   SpindexFlexLeft.setVoltage(secondaryVoltage);
+      //   SpindexFlexRight.setVoltage(primaryVoltage);
+      // } else {
+      //   SpindexFlexLeft.setVoltage(-primaryVoltage);
+      //   SpindexFlexRight.setVoltage(-secondaryVoltage);
+      // }
     }
   }
 
   public boolean isJammed() {
-    return false;//detectorLeft.update(SpindexFlexLeft.getOutputCurrent(), SpindexFlexLeft.getEncoder().getVelocity())
-        //|| detectorRight.update(SpindexFlexRight.getOutputCurrent(), SpindexFlexRight.getEncoder().getVelocity());
+    return false;// detectorLeft.update(SpindexFlexLeft.getOutputCurrent(),
+                 // SpindexFlexLeft.getEncoder().getVelocity())
+    // || detectorRight.update(SpindexFlexRight.getOutputCurrent(),
+    // SpindexFlexRight.getEncoder().getVelocity());
+  }
+
+  public boolean blueJammed() {
+    return detectorRight.update(SpindexFlexRight.getOutputCurrent(), SpindexFlexRight.getEncoder().getVelocity());
+  }
+
+  public boolean blackJammed() {
+    return detectorLeft.update(SpindexFlexLeft.getOutputCurrent(), SpindexFlexLeft.getEncoder().getVelocity());
   }
 
   public void stop() {

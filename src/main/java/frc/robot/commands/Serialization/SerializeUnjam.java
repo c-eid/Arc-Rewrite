@@ -4,6 +4,7 @@
 
 package frc.robot.commands.Serialization;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.s_Belt;
 import frc.robot.subsystems.s_Serializer;
@@ -15,14 +16,14 @@ public class SerializeUnjam extends Command {
   s_Belt s_Belt;
   s_Serializer s_Serializer;
   MotorJamDetector detectorBelt;
-
+  Timer time;
 
   boolean currentJamValue = false;
 
   public SerializeUnjam(s_Belt s_Belt, s_Serializer s_Serializer) {
     this.s_Belt = s_Belt;
     this.s_Serializer = s_Serializer;
-
+    this.time = new Timer();
     this.detectorBelt = new MotorJamDetector(20, 200, 0.5);
     
     addRequirements(s_Belt, s_Serializer);
@@ -30,7 +31,9 @@ public class SerializeUnjam extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    time.reset();
+  }
 
   
   // Called every time the scheduler runs while the command is scheduled.
@@ -39,12 +42,17 @@ public class SerializeUnjam extends Command {
     currentJamValue = detectorBelt.update(s_Belt.getAmps(), s_Belt.getVelocity()) || s_Serializer.isJammed();
     
     // System.out.println(currentJamValue);
+    if(time.get() < 1){
+      s_Belt.setIndexRpm(-2041);
+      s_Serializer.setDiffVoltage(-12);
+      System.out.println("ere");
+    }
     if(currentJamValue == true){
-        s_Belt.setIndexRpm(-4041);
+        s_Belt.setIndexRpm(-2041);
         s_Serializer.setDiffVoltage(-12);
         
     } else{
-        s_Belt.setIndexRpm(4041);
+        s_Belt.setIndexRpm(2041);
         s_Serializer.setFromBeamBreaks();
     }
 

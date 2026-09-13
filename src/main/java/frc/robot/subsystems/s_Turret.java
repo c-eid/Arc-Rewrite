@@ -64,14 +64,14 @@ public class s_Turret extends SubsystemBase {
   public s_Turret(TurretIO turretSim) {
     this.turretSimulation = turretSim;
 
-    pivotSlot0Configs.kS = 0.14316;
-    pivotSlot0Configs.kV =6.417;
-    pivotSlot0Configs.kA = 0.30931;
+    pivotSlot0Configs.kS =0.052847;// 0.14316;
+    pivotSlot0Configs.kV =6.5276;
+    pivotSlot0Configs.kA = 0.57952;
     pivotSlot0Configs.kG = 0;
 
-    pivotSlot0Configs.kP =79.706; // 10;
+    pivotSlot0Configs.kP =34.617; //79.706; // 10;
     pivotSlot0Configs.kI = 0;
-    pivotSlot0Configs.kD =7.3613;// 0.6;
+    pivotSlot0Configs.kD = 0;//7.3613;// 0.6;
 
     pivotMotionMagicConfigs.MotionMagicCruiseVelocity = 2;
     pivotMotionMagicConfigs.MotionMagicAcceleration = 4;

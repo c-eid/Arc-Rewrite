@@ -32,6 +32,7 @@ public class s_Belt extends SubsystemBase {
   private TalonFX indexTalonRigged = new TalonFX(51);
 
   final MotionMagicVelocityVoltage m_request = new MotionMagicVelocityVoltage(0);
+  
 
   final VoltageOut m_Voltage = new VoltageOut(0);
 
@@ -39,7 +40,7 @@ public class s_Belt extends SubsystemBase {
       new SysIdRoutine.Config(
           Volts.of(1).per(Second), // Ramp rate
           Volts.of(12), // Max step voltage
-          Seconds.of(15), // Timeout
+          Seconds.of(6), // Timeout
           (state) -> SignalLogger.writeString("sysid-test-state", state.toString())),
       new SysIdRoutine.Mechanism(
           (voltage) -> indexTalon.setControl(m_Voltage.withOutput(voltage).withEnableFOC(true)),
