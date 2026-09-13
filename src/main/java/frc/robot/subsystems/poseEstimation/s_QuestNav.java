@@ -73,13 +73,13 @@ public class s_QuestNav extends SubsystemBase {
 
     // Touchboard.bindOptGroup("initalPose",
     //     () -> Commands.runOnce(() -> setPoseFromString(() -> initalPose.get())).ignoringDisable(true));
-    Touchboard.bindOneShotButton("SetStartPoseLeft", Commands.runOnce(()->{
+    Touchboard.bindOneShotButton("SetStartPoseLeft", ()->{
       setPoseFromString(()->"left");
-    }).ignoringDisable(true));
+    });
 
-    Touchboard.bindOneShotButton("SetStartPoseRight", Commands.runOnce(()->{
+    Touchboard.bindOneShotButton("SetStartPoseRight",()->{
       setPoseFromString(()->"right");
-    }).ignoringDisable(true));
+    });
 
     questNav.onTrackingAcquired(() -> {
       if (initialized == false) {
@@ -97,11 +97,11 @@ public class s_QuestNav extends SubsystemBase {
 
     });
     
-    Touchboard.bindActionButton("resetPoseDEMO",()-> Commands.runOnce(()->{
+    Touchboard.bindActionButton("resetPoseDEMO",()->{
       setPose(new Pose3d( 3.828, 4.034, 0, new Rotation3d()));
       s_Swerve.resetPose(new Pose2d( 3.828, 4.034, new Rotation2d()));
       trustQuest = true;
-    }));
+    });
 
     questNav.onTrackingLost(() -> {
       DriverStation.reportError("Quest tracking lost!", false);

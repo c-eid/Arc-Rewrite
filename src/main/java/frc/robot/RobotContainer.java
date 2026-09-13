@@ -215,7 +215,7 @@ public class RobotContainer {
             serialize);
     // driver.rightBumper().whileTrue()
 
-    Touchboard.bindOptGroup("AutoSetter", () -> Commands.runOnce(() -> {
+    Touchboard.bindOptGroup("AutoSetter", () -> {
       try {
         currentAuto = loadAuto(Touchboard.getStringValue("AutoSetter"));
         SmartDashboard.putString("CurrentAuto", Touchboard.getStringValue("AutoSetter"));
@@ -234,7 +234,7 @@ public class RobotContainer {
         }
 
       }
-    }).ignoringDisable(true));
+    });
 
   }
 
