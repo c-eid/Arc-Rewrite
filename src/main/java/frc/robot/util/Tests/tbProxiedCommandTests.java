@@ -7,7 +7,7 @@ public class tbProxiedCommandTests {
     
     int abIndex = 0;
 
-    tbProxiedCommandTests() {
+    public tbProxiedCommandTests() {
         // Test code here
         Touchboard.bindActionButton("abTest", ()-> Commands.run(() -> {
 

@@ -5,7 +5,7 @@ import frc.robot.util.Touchboard;
 
 public class tbCommandTest {
 
-    tbCommandTest() {
+    public tbCommandTest() {
         // Test code here
         Touchboard.bindActionButton("abTest", Commands.run(() -> {
             int abIndex = 0;
