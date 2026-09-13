@@ -256,7 +256,6 @@ public class RobotContainer {
     NamedCommands.registerCommand("zerohood", Commands.none());
     NamedCommands.registerCommand("track right", Commands.none());
     NamedCommands.registerCommand("sethood", Commands.none());
-
   }
 
   PathConstraints constraints = new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
