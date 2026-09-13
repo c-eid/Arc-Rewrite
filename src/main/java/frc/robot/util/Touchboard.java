@@ -124,9 +124,7 @@ public class Touchboard {
 
         Trigger trigger = new Trigger(() -> dataSubscriber.get());
 
-        trigger.onTrue(Commands.runOnce(() -> dataPublisher.set(false)).ignoringDisable(true));
-
-        return trigger.onTrue(command);
+        return trigger.onTrue(command).onTrue(Commands.runOnce(() -> dataPublisher.set(false)).ignoringDisable(true));
     }
 
     /**

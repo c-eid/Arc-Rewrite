@@ -7,25 +7,21 @@ public class tbCommandTest {
 
     public tbCommandTest() {
         // Test code here
-        Touchboard.bindActionButton("abTest", Commands.run(() -> {
             int abIndex = 0;
 
+        Touchboard.bindActionButton("abTest", Commands.run(() -> {
+
             System.out.println("abTest pressed" + abIndex);
-            abIndex++;
         }));
 
         Touchboard.bindToggleButton("togTest", Commands.run(() -> {
-            int abIndex = 0;
 
             System.out.println("togTest pressed" + abIndex);
-            abIndex++;
         }));
 
         Touchboard.bindOneShotButton("oneShotTest", Commands.run(() -> {
-            int abIndex = 0;
 
             System.out.println("oneShotTest pressed" + abIndex);
-            abIndex++;
         }));
     }
 }

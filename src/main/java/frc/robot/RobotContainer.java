@@ -48,6 +48,9 @@ import frc.robot.subsystems.poseEstimation.s_QuestNav;
 import frc.robot.util.Touchboard;
 import frc.robot.util.u_Dist;
 import frc.robot.util.Tests.tbCommandTest;
+import frc.robot.util.Tests.tbProxiedCommandRepTest;
+import frc.robot.util.Tests.tbProxiedCommandTests;
+import frc.robot.util.Tests.tbRunnableTests;
 
 import java.io.File;
 
@@ -110,8 +113,6 @@ public class RobotContainer {
     s_Swerve.bindControllers(s_QNav, driver);
 
     SmartDashboard.putData(CommandScheduler.getInstance());
-
-    new tbCommandTest();
 
     configureDefaults();
     configureModifierBindings();
