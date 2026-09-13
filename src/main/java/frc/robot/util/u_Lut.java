@@ -101,7 +101,6 @@ public class u_Lut {
 
 
 
-
         initialized = true;
     }
 

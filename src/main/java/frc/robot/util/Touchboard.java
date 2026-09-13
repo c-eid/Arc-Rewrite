@@ -91,16 +91,9 @@ public class Touchboard {
 
     // AXIS + NUMBER COMPONENT value getter
     public static boolean getBooleanValue(String topic) {
-        if (BooleanSubscriberMap.containsKey(topic)) {
-            // System.out.println(BooleanSubscriberMap.size());
-            return BooleanSubscriberMap.get(topic).get();
-        } else {
-            final BooleanSubscriber dataSubscriber = datatable.getBooleanTopic(topic).subscribe(false);
-
-            BooleanSubscriberMap.put(topic, dataSubscriber);
-
-            return BooleanSubscriberMap.get(topic).get();
-        }
+        return BooleanSubscriberMap.computeIfAbsent(topic, 
+            t -> datatable.getBooleanTopic(t).subscribe(false)
+        ).get();
     }
 
     // Axis Methods
@@ -111,7 +104,7 @@ public class Touchboard {
         DoubleSubscriber dataSubscriber = datatable.getDoubleTopic(topic).subscribe(0,
                 PubSubOption.pollStorage(1), PubSubOption.keepDuplicates(true));
 
-        return new Trigger(() -> dataSubscriber.readQueueValues().length > 0).onTrue(Commands.deferredProxy(command));
+        return new Trigger(() -> dataSubscriber.readQueueValues().length > 0).onTrue(selfCancelingCommand(topic, command));
     }
 
     // Number Component Methods
@@ -132,16 +125,9 @@ public class Touchboard {
 
     // AXIS + NUMBER COMPONENT value getter
     public static double getDoubleValue(String topic) {
-        if (DoubleSubscriberMap.containsKey(topic)) {
-            // System.out.println(DoubleSubscriberMap.size());
-            return DoubleSubscriberMap.get(topic).get();
-        } else {
-            final DoubleSubscriber dataSubscriber = datatable.getDoubleTopic(topic).subscribe(0.0);
-
-            DoubleSubscriberMap.put(topic, dataSubscriber);
-
-            return DoubleSubscriberMap.get(topic).get();
-        }
+       return DoubleSubscriberMap.computeIfAbsent(topic, 
+            t -> datatable.getDoubleTopic(t).subscribe(0.0)
+        ).get();
     }
 
     // Dropdown Methods
@@ -170,15 +156,9 @@ public class Touchboard {
 
     // OPT GROUP + DROPDOWN COMPONENT value getter
     public static String getStringValue(String topic) {
-        if (StringSubscriberMap.containsKey(topic)) {
-            return StringSubscriberMap.get(topic).get();
-        } else {
-            final StringSubscriber dataSubscriber = datatable.getStringTopic(topic).subscribe("");
-
-            StringSubscriberMap.put(topic, dataSubscriber);
-
-            return StringSubscriberMap.get(topic).get();
-        }
+        return StringSubscriberMap.computeIfAbsent(topic, 
+            t -> datatable.getStringTopic(t).subscribe("")
+        ).get();
     }
 
     // Helper Methods:
